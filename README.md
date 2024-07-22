@@ -1,1 +1,1 @@
-Hi, I am hosting my HTML charts here.
+This is where the HTML charts in the [AI Risk Index website](airiskindex.com) are hosted.
