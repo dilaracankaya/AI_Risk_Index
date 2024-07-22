@@ -50,7 +50,7 @@ tweets_df_rsa.groupby("Classification")["Stance_0to100"].agg(["count", "mean"])
 
 # Final score of RSA
 final_rsa = tweets_df_rsa["Stance_0to100"].mean() # 50.89
-
+final_rsa = 50.89
 
 
 ## PUBLIC SENTIMENT ANALYSIS
@@ -95,7 +95,7 @@ tweets_df_psa.groupby("Classification")["Stance_0to100"].agg(["count", "mean"])
 
 # Final score of PSA
 final_psa = tweets_df_psa["Stance_0to100"].mean() # 70.77
-
+final_psa = 70.77
 
 
 ## INVESTMENTS
