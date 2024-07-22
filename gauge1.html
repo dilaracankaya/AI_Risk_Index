@@ -11,7 +11,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f0f0f0; /* Optional background color */
+            background-color: transparent;
         }
         .container {
             width: 100%;
@@ -19,12 +19,14 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            background-color: transparent;
         }
         img {
-            max-width: 100%;
-            max-height: 100%;
-            width: auto;
-            height: auto;
+            width: 120%; /* Increase this value to make the image larger */
+            height: 120%; /* Increase this value to make the image larger */
+            object-fit: contain;
+            max-width: none;
+            max-height: none;
         }
     </style>
 </head>
