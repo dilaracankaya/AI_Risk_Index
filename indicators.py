@@ -11,8 +11,8 @@ query_rsa = "AI (regulation OR regulations OR regulatory OR policy OR policies O
 # df_rsa = tweets_df_rsa.copy()
 
 # Read saved tweets dataset
-tweets_df_rsa = pd.read_csv("fetched_tweets/tweets_rsa_{??}.csv")
-tweets_df_rsa.head()
+#tweets_df_rsa = pd.read_csv("fetched_tweets/tweets_rsa_{??}.csv")
+#tweets_df_rsa.head()
 
 # Process
 process_df("rsa").head()
@@ -63,8 +63,8 @@ query_psa = "AI (governance OR policy OR regulation OR capabilities) OR (#AIgove
 # df_psa = tweets_df_psa.copy()
 
 # Read saved tweets dataset
-tweets_df_psa = pd.read_csv("fetched_tweets/tweets_psa_{??}.csv")
-tweets_df_psa.head()
+#tweets_df_psa = pd.read_csv("fetched_tweets/tweets_psa_{??}.csv")
+#tweets_df_psa.head()
 
 # Process
 process_df("psa").head()

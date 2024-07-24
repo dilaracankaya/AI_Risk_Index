@@ -108,6 +108,7 @@ for data, filename in data_and_filenames:
     create_his_graph(data, filename)
     commit_to_github(f"{filename}.html", branch_name="test")
 
+create_his_graph(hist_invcap, "hist_invcap")
 
 
 ## Gauge chart for index home page
