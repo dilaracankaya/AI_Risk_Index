@@ -110,7 +110,7 @@ final_invsaf = hist_invsaf[-1]
 
 
 ## FINAL TOTAL CALCULATION
-hist_airi = [0.25 * (hist_rsa[i] + hist_psa[i] + hist_invcap[i] + hist_invsaf[i]) for i in range(len(sa_rsa))]
+hist_airi = [0.25 * (hist_rsa[i] + hist_psa[i] + hist_invcap[i] + hist_invsaf[i]) for i in range(len(hist_rsa))]
 airi_score = round(0.25*(final_psa + final_rsa + final_invcap + final_invsaf), ndigits=2)
 
 
