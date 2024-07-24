@@ -1,15 +1,13 @@
 import plotly.graph_objects as go
 from PIL import Image, ImageDraw, ImageFont
-from io import BytesIO
 import datetime
-import os
 import base64
 import subprocess
 from common import *
-from indicators import airi_score, final_rsa, final_psa, final_invcap, final_invsaf, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi
+from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi
 
 
-def create_html_file(png_path, output_filename, img_type="web", new_width=None, new_height=None):
+def create_html(png_path, output_filename, img_type="web", new_width=None, new_height=None):
     try:
         with open(png_path, "rb") as image_file:
             img_str = base64.b64encode(image_file.read()).decode("utf-8")
@@ -41,7 +39,8 @@ def create_html_file(png_path, output_filename, img_type="web", new_width=None, 
     return html_path
 
 
-def commit_to_github(file_path, branch_name="gh-pages", remote_name="origin", repo_url="https://github.com/dilaracankaya/AI_Risk_Index.git"):
+def commit_to_github(file_path, branch_name="test", remote_name="origin",
+                     repo_url="https://github.com/dilaracankaya/AI_Risk_Index.git"):
     try:
         # Initialize Git repository if not already done
         if not os.path.exists(".git"):
@@ -52,19 +51,23 @@ def commit_to_github(file_path, branch_name="gh-pages", remote_name="origin", re
         if remote_name not in remotes:
             subprocess.run(["git", "remote", "add", remote_name, repo_url], check=True)
 
-        # Fetch latest changes from remote
-        subprocess.run(["git", "fetch", remote_name], check=True)
+        # Check if branch exists
+        branches = subprocess.run(["git", "branch"], capture_output=True, text=True).stdout.splitlines()
+        branch_exists = any(branch_name in branch for branch in branches)
 
-        # Create and switch to a new branch from a clean state
-        subprocess.run(["git", "checkout", "--orphan", branch_name], check=True)  # Create branch without history
-        subprocess.run(["git", "rm", "-rf", "."], check=True)  # Remove all files from the working directory
+        if branch_exists:
+            # Checkout the branch and reset it
+            subprocess.run(["git", "checkout", branch_name], check=True)
+        else:
+            # Create a new orphan branch
+            subprocess.run(["git", "checkout", "--orphan", branch_name], check=True)
 
-        # Add the file to the new branch
+        # Add the file to the branch
         subprocess.run(["git", "add", file_path], check=True)
         commit_message = f"Add HTML file: {os.path.basename(file_path)}"
         subprocess.run(["git", "commit", "-m", commit_message], check=True)
 
-        # Push the new branch to remote
+        # Push the branch to remote
         subprocess.run(["git", "push", "-u", remote_name, branch_name], check=True)
         print(f"File {file_path} committed to branch: {branch_name}")
 
@@ -192,11 +195,11 @@ def erase_bg_and_crop(input_image, output_filename, resize_factor):
 
 
 erase_bg_and_crop('gauge.png', "gauge_cropped", 0.55)
-create_html_file('gauge_cropped.png', "gauge_cropped", type="web", new_width=None, new_height=None)
+create_html('gauge_cropped.png', "gauge_cropped", img_type="web", new_width=None, new_height=None)
 commit_to_github("gauge_cropped.html", branch_name="test")
 
 erase_bg_and_crop('gauge.png', "gauge_cropped_mobile", 0.35)
-create_html_file('gauge_cropped_mobile.png', "gauge_cropped_mobile", type="web", new_width=None, new_height=None)
+create_html('gauge_cropped_mobile.png', "gauge_cropped_mobile", img_type="web", new_width=None, new_height=None)
 commit_to_github("gauge_cropped_mobile.html", branch_name="test")
 
 
@@ -249,5 +252,5 @@ draw.text((bg_width - text_width - right_margin, bg_height - 45), footer_right, 
 
 # Save the final image
 background.save("gauge_x.png")
-create_html_file('gauge_x.png', "gauge_x", type="x", new_width=new_width, new_height=new_height)
+create_html('gauge_x.png', "gauge_x", img_type="x", new_width=new_width, new_height=new_height)
 commit_to_github("gauge_x.html", branch_name="test")
