@@ -2,7 +2,7 @@ import os
 import tempfile
 import plotly.graph_objects as go
 from PIL import Image, ImageDraw, ImageFont
-import datetime
+from datetime import datetime, timedelta
 import base64
 import subprocess
 from common import *
@@ -80,9 +80,9 @@ def commit_to_github(file_path, branch_name="test", remote_name="origin",
 ## Indicator history charts
 def create_his_graph(y_values, filename):
     try:
-        end_date = datetime.datetime.today()
-        end_date -= datetime.timedelta(days=end_date.weekday() % 7)
-        dates = [end_date - datetime.timedelta(weeks=i) for i in range(len(y_values))]
+        end_date = datetime.today()
+        end_date -= timedelta(days=end_date.weekday() % 7)
+        dates = [end_date - timedelta(weeks=i) for i in range(len(y_values))]
         date_labels = [date.strftime('%b %d') for date in reversed(dates)]
 
         fig = go.Figure(data=go.Scatter(x=date_labels, y=y_values, mode='lines', line=dict(color='blue')))
@@ -93,10 +93,12 @@ def create_his_graph(y_values, filename):
             plot_bgcolor='white', paper_bgcolor='rgba(0,0,0,0)',
             hovermode="x unified", hoverlabel=dict(bgcolor="white", font_size=16, font_color="black")
         )
-        fig.write_html(f"{filename}.html", config={'displayModeBar': False})
+        html_path = f"{filename}.html"
+        fig.write_html(html_path, config={'displayModeBar': False})
+        return html_path
     except Exception as e:
         print(f"Error creating graph: {e}")
-
+        return None
 
 data_and_filenames = [(hist_invcap, "hist_invcap"),
                       (hist_invsaf, "hist_invsaf"),
@@ -105,11 +107,9 @@ data_and_filenames = [(hist_invcap, "hist_invcap"),
                       (hist_airi, "hist_airi")]
 
 for data, filename in data_and_filenames:
-    create_his_graph(data, filename)
-    commit_to_github(f"{filename}.html", branch_name="test")
-
-create_his_graph(hist_invcap, "hist_invcap")
-
+    html_path = create_his_graph(data, filename)
+    if html_path:
+        commit_to_github(html_path, branch_name="test")
 
 ## Gauge chart for index home page
 def deg_to_rad(deg):
