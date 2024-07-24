@@ -194,13 +194,13 @@ def erase_bg_and_crop(input_image, output_filename, resize_factor):
         return None
 
 
-erase_bg_and_crop('gauge.png', "gauge_cropped", 0.55)
-create_html('gauge_cropped.png', "gauge_cropped", img_type="web", new_width=None, new_height=None)
-commit_to_github("gauge_cropped.html", branch_name="test")
+erase_bg_and_crop('gauge.png', "gauge_cropped_web", 0.55)
+create_html('gauge_cropped_web.png', "gauge_web", img_type="web", new_width=None, new_height=None)
+commit_to_github("gauge_web.html", branch_name="test")
 
 erase_bg_and_crop('gauge.png', "gauge_cropped_mobile", 0.35)
-create_html('gauge_cropped_mobile.png', "gauge_cropped_mobile", img_type="web", new_width=None, new_height=None)
-commit_to_github("gauge_cropped_mobile.html", branch_name="test")
+create_html('gauge_cropped_mobile.png', "gauge_mobile", img_type="web", new_width=None, new_height=None)
+commit_to_github("gauge_mobile.html", branch_name="test")
 
 
 
@@ -212,17 +212,17 @@ gauge_cropped = Image.open('gauge_cropped.png')
 # Resize background
 new_width = int(gauge_cropped.width * 1.2)
 new_height = new_width  # Ensure background is square
-background = background.resize((new_width, new_height), Image.LANCZOS)
+gauge_x = background.resize((new_width, new_height), Image.LANCZOS)
 
 # Center the gauge_cropped on the background and lower it a bit
-bg_width, bg_height = background.size
+bg_width, bg_height = gauge_x.size
 gauge_width, gauge_height = gauge_cropped.size
 x_center = (bg_width - gauge_width) // 2
 y_center = (bg_height - gauge_height) // 2 + 48  # Lower the gauge by 30 pixels
-background.paste(gauge_cropped, (x_center, y_center), gauge_cropped)
+gauge_x.paste(gauge_cropped, (x_center, y_center), gauge_cropped)
 
 # Draw text on the image
-draw = ImageDraw.Draw(background)
+draw = ImageDraw.Draw(gauge_x)
 font_path = "/Library/Fonts/Helvetica.ttc"  # Make sure this path is correct
 font_title = ImageFont.truetype(font_path, 50)   # For title text
 font_subtitle = ImageFont.truetype(font_path, 30) # For subtitle text
@@ -251,6 +251,6 @@ text_width = bbox[2] - bbox[0]
 draw.text((bg_width - text_width - right_margin, bg_height - 45), footer_right, fill="darkgrey", font=font_footer)
 
 # Save the final image
-background.save("gauge_x.png")
+gauge_x.save("gauge_x.png")
 create_html('gauge_x.png', "gauge_x", img_type="x", new_width=new_width, new_height=new_height)
 commit_to_github("gauge_x.html", branch_name="test")
