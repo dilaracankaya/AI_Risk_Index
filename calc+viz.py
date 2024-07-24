@@ -1,3 +1,5 @@
+import os
+import tempfile
 import plotly.graph_objects as go
 from PIL import Image, ImageDraw, ImageFont
 import datetime
@@ -159,7 +161,12 @@ plt.annotate(round(airi_score), xytext=(0, 0), xy=(deg_to_rad((100 - round(airi_
              bbox=dict(boxstyle="circle, pad=0.4", facecolor="black", linewidth=0.3))
 
 ax.set_axis_off()
-fig.savefig('gauge.png', transparent=True)
+# fig.savefig('gauge.png', transparent=True)
+
+# Create a temporary file for the gauge image
+with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
+    temp_filename = temp_file.name
+    fig.savefig(temp_filename, transparent=True)
 
 
 def erase_bg_and_crop(input_image, output_filename, resize_factor):
@@ -185,34 +192,54 @@ def erase_bg_and_crop(input_image, output_filename, resize_factor):
 
             cropped_gauge = img.crop((new_left, new_top, new_right, new_bottom))
             new_size = (int(cropped_gauge.width * resize_factor), int(cropped_gauge.height * resize_factor))
-            resized_gauge = cropped_gauge.resize(new_size, Image.LANCZOS)
-            png_path = f"{output_filename}.png"
-            resized_gauge.save(png_path)
-        return png_path
+
+            # Create a temporary file for the resized image
+            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
+                temp_filename = temp_file.name
+                resized_gauge = cropped_gauge.resize(new_size, Image.LANCZOS)
+                resized_gauge.save(temp_filename)
+
+            return temp_filename
     except Exception as e:
         print(f"Error processing image: {e}")
         return None
 
 
-erase_bg_and_crop('gauge.png', "gauge_cropped_web", 0.55)
-create_html('gauge_cropped_web.png', "gauge_web", img_type="web", new_width=None, new_height=None)
-commit_to_github("gauge_web.html", branch_name="test")
+# Use the temporary files
+cropped_web_path = erase_bg_and_crop(temp_filename, "gauge_cropped_web", 0.55)
+if cropped_web_path:
+    html_path = create_html(cropped_web_path, "gauge_web", img_type="web", new_width=None, new_height=None)
+    if html_path:
+        commit_to_github(html_path, branch_name="test")
 
-erase_bg_and_crop('gauge.png', "gauge_cropped_mobile", 0.35)
-create_html('gauge_cropped_mobile.png', "gauge_mobile", img_type="web", new_width=None, new_height=None)
-commit_to_github("gauge_mobile.html", branch_name="test")
+cropped_mobile_path = erase_bg_and_crop(temp_filename, "gauge_cropped_mobile", 0.35)
+if cropped_mobile_path:
+    html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="web", new_width=None, new_height=None)
+    if html_path:
+        commit_to_github(html_path, branch_name="test")
 
+
+# erase_bg_and_crop('gauge.png', "gauge_cropped_web", 0.55)
+# create_html('gauge_cropped_web.png', "gauge_web", img_type="web", new_width=None, new_height=None)
+# commit_to_github("gauge_web.html", branch_name="test")
+#
+# erase_bg_and_crop('gauge.png', "gauge_cropped_mobile", 0.35)
+# create_html('gauge_cropped_mobile.png', "gauge_mobile", img_type="web", new_width=None, new_height=None)
+# commit_to_github("gauge_mobile.html", branch_name="test")
 
 
 # X image
 # Load images
 background = Image.open('background.png')
-gauge_cropped = Image.open('gauge_cropped.png')
+gauge_cropped = Image.open(cropped_web_path)
 
 # Resize background
 new_width = int(gauge_cropped.width * 1.2)
 new_height = new_width  # Ensure background is square
-gauge_x = background.resize((new_width, new_height), Image.LANCZOS)
+with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
+    temp_background_path = temp_file.name
+    gauge_x = background.resize((new_width, new_height), Image.LANCZOS)
+    gauge_x.save(temp_background_path)
 
 # Center the gauge_cropped on the background and lower it a bit
 bg_width, bg_height = gauge_x.size
@@ -251,6 +278,17 @@ text_width = bbox[2] - bbox[0]
 draw.text((bg_width - text_width - right_margin, bg_height - 45), footer_right, fill="darkgrey", font=font_footer)
 
 # Save the final image
-gauge_x.save("gauge_x.png")
-create_html('gauge_x.png', "gauge_x", img_type="x", new_width=new_width, new_height=new_height)
-commit_to_github("gauge_x.html", branch_name="test")
+with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
+    temp_filename_x = temp_file.name
+    gauge_x.save(temp_filename_x)
+
+html_x_path = create_html(temp_filename_x, "gauge_x", img_type="x", new_width=new_width, new_height=new_height)
+if html_x_path:
+    commit_to_github(html_x_path, branch_name="test")
+
+# Clean up temporary files
+os.remove(temp_filename)
+os.remove(cropped_web_path)
+os.remove(cropped_mobile_path)
+os.remove(temp_background_path)
+os.remove(temp_filename_x)
