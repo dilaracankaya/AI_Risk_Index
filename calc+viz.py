@@ -1,65 +1,107 @@
 import plotly.graph_objects as go
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
+import datetime
+import os
 import base64
+import subprocess
 from common import *
-from indicators import airi_score, final_rsa, final_psa, final_incap, final_insaf, invcap, invsaf
+from indicators import airi_score, final_rsa, final_psa, final_invcap, final_invsaf, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi
+
+
+def create_html_file(png_path, output_filename, img_type="web", new_width=None, new_height=None):
+    try:
+        with open(png_path, "rb") as image_file:
+            img_str = base64.b64encode(image_file.read()).decode("utf-8")
+    except Exception as e:
+        print(f"Error reading image file: {e}")
+        return
+
+    img_attrs = ''
+    if img_type == "x":
+        if new_width and new_height:
+            img_attrs = f'width="{new_width}" height="{new_height}"'
+        else:
+            print("Invalid parameters for image type 'x'. Please provide new_width and new_height.")
+            return
+
+    html_content = f"""
+    <html>
+    <body>
+        <img src="data:image/png;base64,{img_str}" alt="Gauge Graph" {img_attrs}>
+    </body>
+    </html>
+    """
+
+    html_path = f"{output_filename}.html"
+    with open(html_path, 'w') as f:
+        f.write(html_content)
+    print(f"HTML file created at {html_path}")
+
+    return html_path
+
+
+def commit_to_github(file_path, branch_name="gh-pages", remote_name="origin", repo_url="https://github.com/dilaracankaya/AI_Risk_Index.git"):
+    try:
+        # Initialize Git repository if not already done
+        if not os.path.exists(".git"):
+            subprocess.run(["git", "init"], check=True)
+
+        # Add remote if not already present
+        remotes = subprocess.run(["git", "remote"], capture_output=True, text=True).stdout.splitlines()
+        if remote_name not in remotes:
+            subprocess.run(["git", "remote", "add", remote_name, repo_url], check=True)
+
+        # Fetch latest changes from remote
+        subprocess.run(["git", "fetch", remote_name], check=True)
+
+        # Create and switch to a new branch from a clean state
+        subprocess.run(["git", "checkout", "--orphan", branch_name], check=True)  # Create branch without history
+        subprocess.run(["git", "rm", "-rf", "."], check=True)  # Remove all files from the working directory
+
+        # Add the file to the new branch
+        subprocess.run(["git", "add", file_path], check=True)
+        commit_message = f"Add HTML file: {os.path.basename(file_path)}"
+        subprocess.run(["git", "commit", "-m", commit_message], check=True)
+
+        # Push the new branch to remote
+        subprocess.run(["git", "push", "-u", remote_name, branch_name], check=True)
+        print(f"File {file_path} committed to branch: {branch_name}")
+
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred: {e}")
+
 
 ## Indicator history charts
 def create_his_graph(y_values, filename):
-    # X-axis
-    today = datetime.today()
-    if today.weekday() == 0:  # Monday is 0
-        end_date = today
-    else:
-        end_date = today - timedelta(days=today.weekday())
+    try:
+        end_date = datetime.datetime.today()
+        end_date -= datetime.timedelta(days=end_date.weekday() % 7)
+        dates = [end_date - datetime.timedelta(weeks=i) for i in range(len(y_values))]
+        date_labels = [date.strftime('%b %d') for date in reversed(dates)]
 
-    dates = [end_date - timedelta(weeks=i) for i in range(len(y_values))]
-    date_labels = [date.strftime('%b %d') for date in reversed(dates)]
-
-    fig = go.Figure()
-
-    fig.add_trace(go.Scatter(
-        x=date_labels,
-        y=y_values,
-        mode='lines',
-        line=dict(color='blue')))
-
-
-    fig.update_layout(
-        yaxis=dict(
-            side='right',
-            gridcolor='lightgrey',
-            autorange=True,
-            range=[min(y_values) - (max(y_values) - min(y_values)) * 0.1, max(y_values)]),
-        xaxis=dict(
-            range=[0, len(y_values)],
-            gridcolor='lightgrey',
-            showline=True,
-            linecolor='black',
-            linewidth=2,
-            mirror=True),
-        plot_bgcolor='white',
-        paper_bgcolor='rgba(0,0,0,0)',  # Set background color to transparent
-        hovermode="x unified",
-        hoverlabel = dict(
-            bgcolor="white",  # Background color for hover labels
-            font_size=16,  # Font size for hover labels
-            font_color="black"))  # Font color for hover labels
-
-    fig.show()
-    return fig.write_html(f"{filename}.html", config= {'displayModeBar': False})
+        fig = go.Figure(data=go.Scatter(x=date_labels, y=y_values, mode='lines', line=dict(color='blue')))
+        y_range = [min(y_values) - (max(y_values) - min(y_values)) * 0.1, max(y_values)]
+        fig.update_layout(
+            yaxis=dict(side='right', gridcolor='lightgrey', autorange=True, range=y_range),
+            xaxis=dict(gridcolor='lightgrey', showline=True, linecolor='black', linewidth=2, mirror=True),
+            plot_bgcolor='white', paper_bgcolor='rgba(0,0,0,0)',
+            hovermode="x unified", hoverlabel=dict(bgcolor="white", font_size=16, font_color="black")
+        )
+        fig.write_html(f"{filename}.html", config={'displayModeBar': False})
+    except Exception as e:
+        print(f"Error creating graph: {e}")
 
 
-sa_rsa = [40.12, 42.15, 43.67, 44.88, 46.20, 47.35, 48.58, 49.12, 49.87, 50.24, 50.67, 51.22, 50.89]
-sa_psa = [62.34, 63.56, 65.12, 66.78, 67.89, 68.45, 68.90, 69.12, 69.45, 69.78, 70.12, 70.50, 70.77]
-hist_airi = [0.25 * (sa_rsa[i] + sa_psa[i] + invcap[i] + invsaf[i]) for i in range(len(sa_rsa))]
+data_and_filenames = [(hist_invcap, "hist_invcap"),
+                      (hist_invsaf, "hist_invsaf"),
+                      (hist_rsa, "hist_rsa"),
+                      (hist_psa, "hist_psa"),
+                      (hist_airi, "hist_airi")]
 
-create_his_graph(invcap, "invcap")
-create_his_graph(invsaf, "invsaf")
-create_his_graph(sa_rsa, "sa_rsa")
-create_his_graph(sa_psa, "sa_psa")
-create_his_graph(hist_airi, "hist_airi")
+for data, filename in data_and_filenames:
+    create_his_graph(data, filename)
+    commit_to_github(f"{filename}.html", branch_name="test")
 
 
 
@@ -67,7 +109,7 @@ create_his_graph(hist_airi, "hist_airi")
 def deg_to_rad(deg):
     return deg * np.pi/180
 
-
+# Creating the main plot
 values = [100, 80, 60, 40, 20, 0]
 x_axis_deg = [0, 36, 72, 108, 144]
 x_axis_vals = [deg_to_rad(i) for i in x_axis_deg]
@@ -114,85 +156,48 @@ plt.annotate(round(airi_score), xytext=(0, 0), xy=(deg_to_rad((100 - round(airi_
              bbox=dict(boxstyle="circle, pad=0.4", facecolor="black", linewidth=0.3))
 
 ax.set_axis_off()
-
-# Save as PNG with transparent background
 fig.savefig('gauge.png', transparent=True)
 
-def erase_bg_crop_and_html(input_image, output_filename, resize_factor):
-    with Image.open(input_image) as img:
-        # Convert image to grayscale for whitespace detection
-        gray_img = img.convert('L')
 
-        # Convert grayscale image to numpy array
-        np_img = np.array(gray_img)
+def erase_bg_and_crop(input_image, output_filename, resize_factor):
+    try:
+        with Image.open(input_image) as img:
+            gray_img = img.convert('L')
+            np_img = np.array(gray_img)
+            threshold = 240
+            mask = np_img < threshold
+            coords = np.argwhere(mask)
+            if coords.size == 0:
+                raise ValueError("No non-white areas detected in the image.")
 
-        # Define a threshold for what counts as whitespace (0 is black, 255 is white)
-        threshold = 240
-        mask = np_img < threshold
+            top, left = coords.min(axis=0)
+            bottom, right = coords.max(axis=0)
+            bbox_width, bbox_height = right - left, bottom - top
+            square_size = max(bbox_width, bbox_height)
+            center_x, center_y = left + bbox_width / 2, top + bbox_height / 2
+            new_left = max(0, int(center_x - square_size / 2))
+            new_top = max(0, int(center_y - square_size / 2))
+            new_right = min(img.width, int(center_x + square_size / 2))
+            new_bottom = min(img.height, int(center_y + square_size / 2))
 
-        # Find bounding box of non-white areas
-        coords = np.argwhere(mask)
-        if coords.size == 0:
-            raise ValueError("No non-white areas detected in the image.")
+            cropped_gauge = img.crop((new_left, new_top, new_right, new_bottom))
+            new_size = (int(cropped_gauge.width * resize_factor), int(cropped_gauge.height * resize_factor))
+            resized_gauge = cropped_gauge.resize(new_size, Image.LANCZOS)
+            png_path = f"{output_filename}.png"
+            resized_gauge.save(png_path)
+        return png_path
+    except Exception as e:
+        print(f"Error processing image: {e}")
+        return None
 
-        top, left = coords.min(axis=0)
-        bottom, right = coords.max(axis=0)
 
-        # Calculate width and height of the bounding box
-        bbox_width = right - left
-        bbox_height = bottom - top
+erase_bg_and_crop('gauge.png', "gauge_cropped", 0.55)
+create_html_file('gauge_cropped.png', "gauge_cropped", type="web", new_width=None, new_height=None)
+commit_to_github("gauge_cropped.html", branch_name="test")
 
-        # Determine size of the square crop
-        square_size = max(bbox_width, bbox_height)
-
-        # Center the bounding box in the square crop
-        center_x = left + bbox_width / 2
-        center_y = top + bbox_height / 2
-
-        new_left = int(center_x - square_size / 2)
-        new_top = int(center_y - square_size / 2)
-        new_right = int(center_x + square_size / 2)
-        new_bottom = int(center_y + square_size / 2)
-
-        # Ensure the coordinates are within image bounds
-        new_left = max(0, new_left)
-        new_top = max(0, new_top)
-        new_right = min(img.width, new_right)
-        new_bottom = min(img.height, new_bottom)
-
-        # Crop the image
-        cropped_gauge = img.crop((new_left, new_top, new_right, new_bottom))
-
-        # Resize the cropped image
-        new_width = int(cropped_gauge.width * resize_factor)
-        new_height = int(cropped_gauge.height * resize_factor)
-        resized_gauge = cropped_gauge.resize((new_width, new_height), Image.LANCZOS)
-
-        # Save the cropped image as PNG
-        png_path = f"{output_filename}.png"
-        resized_gauge.save(png_path)
-
-        # Generate HTML
-        buffered = BytesIO()
-        resized_gauge.save(buffered, format="PNG")
-        img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
-
-        html_content = f"""
-                <html>
-                <body>
-                    <img src="data:image/png;base64,{img_str}" alt="Gauge Graph">
-                </body>
-                </html>
-                """
-
-        html_path = f"{output_filename}.html"
-        with open(html_path, 'w') as f:
-            f.write(html_content)
-
-    return png_path, html_path
-
-# Crop and save as html
-erase_bg_crop_and_html('gauge.png', "gauge_cropped", 0.55)
+erase_bg_and_crop('gauge.png', "gauge_cropped_mobile", 0.35)
+create_html_file('gauge_cropped_mobile.png', "gauge_cropped_mobile", type="web", new_width=None, new_height=None)
+commit_to_github("gauge_cropped_mobile.html", branch_name="test")
 
 
 
@@ -206,7 +211,7 @@ new_width = int(gauge_cropped.width * 1.2)
 new_height = new_width  # Ensure background is square
 background = background.resize((new_width, new_height), Image.LANCZOS)
 
-# Center the gauge_cropped on the background but lower it a bit
+# Center the gauge_cropped on the background and lower it a bit
 bg_width, bg_height = background.size
 gauge_width, gauge_height = gauge_cropped.size
 x_center = (bg_width - gauge_width) // 2
@@ -244,3 +249,5 @@ draw.text((bg_width - text_width - right_margin, bg_height - 45), footer_right, 
 
 # Save the final image
 background.save("gauge_x.png")
+create_html_file('gauge_x.png', "gauge_x", type="x", new_width=new_width, new_height=new_height)
+commit_to_github("gauge_x.html", branch_name="test")

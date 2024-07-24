@@ -49,6 +49,7 @@ recalculate_reclassification(tweets_df_rsa)
 tweets_df_rsa.groupby("Classification")["Stance_0to100"].agg(["count", "mean"])
 
 # Final score of RSA
+hist_rsa = [40.12, 42.15, 43.67, 44.88, 46.20, 47.35, 48.58, 49.12, 49.87, 50.24, 50.67, 51.22, 50.89]
 final_rsa = tweets_df_rsa["Stance_0to100"].mean() # 50.89
 final_rsa = 50.89
 
@@ -94,20 +95,23 @@ recalculate_reclassification(tweets_df_psa)
 tweets_df_psa.groupby("Classification")["Stance_0to100"].agg(["count", "mean"])
 
 # Final score of PSA
+hist_psa = [62.34, 63.56, 65.12, 66.78, 67.89, 68.45, 68.90, 69.12, 69.45, 69.78, 70.12, 70.50, 70.77]
 final_psa = tweets_df_psa["Stance_0to100"].mean() # 70.77
 final_psa = 70.77
 
 
-## INVESTMENTS
-invcap = [95.14, 95.53, 95.39, 95.35, 97.02, 97.71, 97.67, 97.03, 95.93, 96.04, 96.03, 94.78, 92.94]
-invsaf = [87.97, 86.03, 82.53, 81.31, 80.42, 75.87, 80.56, 85.30, 84.21, 88.92, 88.45, 88.18, 76.88]
 
-final_incap = invcap[-1]
-final_insaf = invsaf[-1]
+## INVESTMENTS
+hist_invcap = [95.14, 95.53, 95.39, 95.35, 97.02, 97.71, 97.67, 97.03, 95.93, 96.04, 96.03, 94.78, 92.94]
+hist_invsaf = [87.97, 86.03, 82.53, 81.31, 80.42, 75.87, 80.56, 85.30, 84.21, 88.92, 88.45, 88.18, 76.88]
+
+final_invcap = hist_invcap[-1]
+final_invsaf = hist_invsaf[-1]
 
 
 ## FINAL TOTAL CALCULATION
-airi_score = round(0.25*(final_psa + final_rsa + final_incap + final_insaf), ndigits=2)
+hist_airi = [0.25 * (hist_rsa[i] + hist_psa[i] + hist_invcap[i] + hist_invsaf[i]) for i in range(len(sa_rsa))]
+airi_score = round(0.25*(final_psa + final_rsa + final_invcap + final_invsaf), ndigits=2)
 
 
 """
