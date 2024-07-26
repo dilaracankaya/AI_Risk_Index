@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime, timedelta
 import base64
+import tempfile
 from common import *
 from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi
 
@@ -112,10 +113,15 @@ def erase_bg_and_crop(input_image, output_filename, resize_factor):
             cropped_gauge = img.crop((new_left, new_top, new_right, new_bottom))
             new_size = (int(cropped_gauge.width * resize_factor), int(cropped_gauge.height * resize_factor))
 
-            # Define the path for the resized image
-            output_path = f"{output_filename}.png"
-            resized_gauge = cropped_gauge.resize(new_size, Image.LANCZOS)
-            resized_gauge.save(output_path)
+            # Create a temporary file for the resized image
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
+                output_path = temp_file.name
+                resized_gauge = cropped_gauge.resize(new_size, Image.LANCZOS)
+                resized_gauge.save(output_path)
+            # # Define the path for the resized image
+            # output_path = f"{output_filename}.png"
+            # resized_gauge = cropped_gauge.resize(new_size, Image.LANCZOS)
+            # resized_gauge.save(output_path)
 
             return output_path
     except Exception as e:
@@ -192,8 +198,14 @@ def main():
     plt.tight_layout(pad=0)
     plt.axis('off')
 
-    gauge_file_path = "gauge.png"
-    plt.savefig(gauge_file_path, dpi=100, bbox_inches='tight', pad_inches=0, transparent=True)
+    # gauge_file_path = "gauge.png"
+    # plt.savefig(gauge_file_path, dpi=100, bbox_inches='tight', pad_inches=0, transparent=True)
+
+    # Create a temporary file for the gauge chart
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
+        gauge_file_path = temp_file.name
+        plt.savefig(gauge_file_path, dpi=100, bbox_inches='tight', pad_inches=0, transparent=True)
+    plt.close()
     plt.close()
 
     # Process images
@@ -217,6 +229,13 @@ def main():
 
     # Commit HTML files to the test branch
     commit_to_github(html_paths, branch_name="test")
+
+    # Clean up temporary files
+    os.remove(gauge_file_path)
+    if cropped_web_path:
+        os.remove(cropped_web_path)
+    if cropped_mobile_path:
+        os.remove(cropped_mobile_path)
 
     # Clean up
     #shutil.rmtree("temp_files")
