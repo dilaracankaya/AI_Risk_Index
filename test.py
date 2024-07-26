@@ -181,16 +181,11 @@ def main():
     except Exception as e:
         print(f"Error processing image: {e}")
 
-    # Commit HTML files and the .py file to the test branch
-    script_path = 'test.py'
-    file_paths = html_paths + [script_path]
-    commit_to_github(file_paths, branch_name="test")
+    # Commit HTML files to the test branch
+    commit_to_github(html_paths, branch_name="test")
 
-    # Switch back to the main branch and commit the .py file
+    # Switch back to the main branch
     subprocess.run(["git", "checkout", "main"], check=True)
-    subprocess.run(["git", "add", script_path], check=True)
-    subprocess.run(["git", "commit", "-m", "Update script file"], check=True)
-    subprocess.run(["git", "push"], check=True)
 
     # Clean up
     shutil.rmtree("temp_files")
