@@ -100,6 +100,9 @@ def main():
     # Switch to the test branch at the beginning
     subprocess.run(["git", "checkout", "test"], check=True)
 
+    # Create the temp_files directory if it doesn't exist
+    os.makedirs("temp_files", exist_ok=True)
+
     # Create and commit HTML files
     data_and_filenames = [(hist_invcap, "hist_invcap"),
                           (hist_invsaf, "hist_invsaf"),
