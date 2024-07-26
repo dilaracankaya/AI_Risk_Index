@@ -28,7 +28,7 @@ def create_html(png_path, output_filename, img_type="web", new_width=None, new_h
     html_content = f"""
     <html>
     <body>
-        <img src="data:image/png;base64,{img_str}" alt="Gauge Graph" {img_attrs}>
+        <img src="data:image/png;base64,{img_str}" {img_attrs}>
     </body>
     </html>
     """
@@ -41,28 +41,17 @@ def create_html(png_path, output_filename, img_type="web", new_width=None, new_h
     return html_path
 
 
-def commit_to_github(file_path, branch_name="test", remote_name="origin",
-                     repo_url="https://github.com/dilaracankaya/AI_Risk_Index.git"):
+def commit_to_github(file_path, branch_name="test", remote_name="origin"):
     try:
-        # Initialize Git repository if not already done
-        if not os.path.exists(".git"):
-            subprocess.run(["git", "init"], check=True)
+        # Stash any local changes to avoid conflicts
+        subprocess.run(["git", "stash"], check=True)
 
-        # Add remote if not already present
-        remotes = subprocess.run(["git", "remote"], capture_output=True, text=True).stdout.splitlines()
-        if remote_name not in remotes:
-            subprocess.run(["git", "remote", "add", remote_name, repo_url], check=True)
-
-        # Check if branch exists
-        branches = subprocess.run(["git", "branch"], capture_output=True, text=True).stdout.splitlines()
-        branch_exists = any(branch_name in branch for branch in branches)
-
-        if branch_exists:
-            # Checkout the branch and reset it
+        # Check if the current branch is the one we want to commit to
+        current_branch = subprocess.run(["git", "branch", "--show-current"], capture_output=True,
+                                        text=True).stdout.strip()
+        if current_branch != branch_name:
+            # Checkout the specified branch
             subprocess.run(["git", "checkout", branch_name], check=True)
-        else:
-            # Create a new orphan branch
-            subprocess.run(["git", "checkout", "--orphan", branch_name], check=True)
 
         # Add the file to the branch
         subprocess.run(["git", "add", file_path], check=True)
@@ -75,6 +64,9 @@ def commit_to_github(file_path, branch_name="test", remote_name="origin",
 
     except subprocess.CalledProcessError as e:
         print(f"An error occurred: {e}")
+    finally:
+        # Restore stashed changes
+        subprocess.run(["git", "stash", "pop"], check=True)
 
 
 ## Indicator history charts
@@ -88,17 +80,19 @@ def create_his_graph(y_values, filename):
         fig = go.Figure(data=go.Scatter(x=date_labels, y=y_values, mode='lines', line=dict(color='blue')))
         y_range = [min(y_values) - (max(y_values) - min(y_values)) * 0.1, max(y_values)]
         fig.update_layout(
+            margin=dict(l=0, r=0, t=0, b=0),
             yaxis=dict(side='right', gridcolor='lightgrey', autorange=True, range=y_range),
             xaxis=dict(gridcolor='lightgrey', showline=True, linecolor='black', linewidth=2, mirror=True),
             plot_bgcolor='white', paper_bgcolor='rgba(0,0,0,0)',
             hovermode="x unified", hoverlabel=dict(bgcolor="white", font_size=16, font_color="black")
         )
         html_path = f"{filename}.html"
-        fig.write_html(html_path, config={'displayModeBar': False})
+        fig.write_html(html_path, config={'displayModeBar': False, 'scrollZoom': False})
         return html_path
     except Exception as e:
         print(f"Error creating graph: {e}")
         return None
+
 
 data_and_filenames = [(hist_invcap, "hist_invcap"),
                       (hist_invsaf, "hist_invsaf"),
@@ -110,6 +104,8 @@ for data, filename in data_and_filenames:
     html_path = create_his_graph(data, filename)
     if html_path:
         commit_to_github(html_path, branch_name="test")
+
+
 
 ## Gauge chart for index home page
 def deg_to_rad(deg):
@@ -162,7 +158,6 @@ plt.annotate(round(airi_score), xytext=(0, 0), xy=(deg_to_rad((100 - round(airi_
              bbox=dict(boxstyle="circle, pad=0.4", facecolor="black", linewidth=0.3))
 
 ax.set_axis_off()
-# fig.savefig('gauge.png', transparent=True)
 
 # Create a temporary file for the gauge image
 with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
@@ -219,14 +214,6 @@ if cropped_mobile_path:
     if html_path:
         commit_to_github(html_path, branch_name="test")
 
-
-# erase_bg_and_crop('gauge.png', "gauge_cropped_web", 0.55)
-# create_html('gauge_cropped_web.png', "gauge_web", img_type="web", new_width=None, new_height=None)
-# commit_to_github("gauge_web.html", branch_name="test")
-#
-# erase_bg_and_crop('gauge.png', "gauge_cropped_mobile", 0.35)
-# create_html('gauge_cropped_mobile.png', "gauge_mobile", img_type="web", new_width=None, new_height=None)
-# commit_to_github("gauge_mobile.html", branch_name="test")
 
 
 # X image
