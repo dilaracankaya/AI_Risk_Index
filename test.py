@@ -78,7 +78,7 @@ def create_his_graph(y_values, filename):
             hovermode="x unified", hoverlabel=dict(bgcolor="white", font_size=16, font_color="black"))
 
         # Define the path for the HTML file
-        html_path = os.path.join("f"{filename}.html")
+        html_path = os.path.join(f"{filename}.html")
         fig.write_html(html_path, config={'displayModeBar': False, 'scrollZoom': False, 'doubleClick': False,
                                           'showAxisDragHandles': False})
         return html_path
