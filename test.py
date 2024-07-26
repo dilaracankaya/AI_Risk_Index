@@ -1,12 +1,10 @@
 import os
 import shutil
 import subprocess
-import tempfile
 import plotly.graph_objects as go
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime, timedelta
 import base64
-import numpy as np
 from common import *
 from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi
 
@@ -196,7 +194,9 @@ def main():
         plt.annotate(val, xy=(loc, 1.3), ha=ha, fontsize="16", color=color)
 
     plt.annotate(round(airi_score), xytext=(0, 0), xy=(deg_to_rad((100 - round(airi_score)) / 100 * 180), 1.8),
-                 fontsize=45, color="black", ha="center")
+                 fontsize=45, color="#FFFCF8", ha="center", va="center",
+                 arrowprops=dict(arrowstyle="wedge, tail_width=0.5", color="black"),
+                 bbox=dict(boxstyle="circle, pad=0.4", facecolor="black", linewidth=0.3))
 
     plt.tight_layout(pad=0)
     plt.axis('off')
@@ -213,7 +213,7 @@ def main():
         # Process and save cropped images without using tempfile
         cropped_web_path = erase_bg_and_crop(gauge_file_path, "gauge_cropped_web", 0.55)
         if cropped_web_path:
-            html_path = create_html(cropped_web_path, "gauge_web", img_type="x", new_width=450, new_height=450)
+            html_path = create_html(cropped_web_path, "gauge_web", img_type="x", new_width=450, new_height=400)
             if html_path:
                 html_paths.append(html_path)
 
