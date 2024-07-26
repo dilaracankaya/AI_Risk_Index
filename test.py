@@ -175,7 +175,7 @@ def main():
         print(f"Error processing image: {e}")
 
     # Commit HTML files and the .py file to the test branch
-    script_path = 'calc+viz.py'
+    script_path = 'test.py'
     file_paths = html_paths + [script_path]
     commit_to_github(file_paths, branch_name="test")
 
