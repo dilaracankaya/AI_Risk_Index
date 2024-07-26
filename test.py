@@ -96,6 +96,41 @@ def create_his_graph(y_values, filename):
         return None
 
 
+def erase_bg_and_crop(input_image, output_filename, resize_factor):
+    try:
+        with Image.open(input_image) as img:
+            gray_img = img.convert('L')
+            np_img = np.array(gray_img)
+            threshold = 240
+            mask = np_img < threshold
+            coords = np.argwhere(mask)
+            if coords.size == 0:
+                raise ValueError("No non-white areas detected in the image.")
+
+            top, left = coords.min(axis=0)
+            bottom, right = coords.max(axis=0)
+            bbox_width, bbox_height = right - left, bottom - top
+            square_size = max(bbox_width, bbox_height)
+            center_x, center_y = left + bbox_width / 2, top + bbox_height / 2
+            new_left = max(0, int(center_x - square_size / 2))
+            new_top = max(0, int(center_y - square_size / 2))
+            new_right = min(img.width, int(center_x + square_size / 2))
+            new_bottom = min(img.height, int(center_y + square_size / 2))
+
+            cropped_gauge = img.crop((new_left, new_top, new_right, new_bottom))
+            new_size = (int(cropped_gauge.width * resize_factor), int(cropped_gauge.height * resize_factor))
+
+            # Define the path for the resized image
+            output_path = f"temp_files/{output_filename}.png"
+            resized_gauge = cropped_gauge.resize(new_size, Image.LANCZOS)
+            resized_gauge.save(output_path)
+
+            return output_path
+    except Exception as e:
+        print(f"Error processing image: {e}")
+        return None
+
+
 def main():
     # Switch to the test branch at the beginning
     subprocess.run(["git", "checkout", "test"], check=True)
@@ -168,21 +203,29 @@ def main():
 
     gauge_file_path = "temp_files/gauge.png"
     plt.savefig(gauge_file_path, dpi=100, bbox_inches='tight', pad_inches=0, transparent=True)
-
     plt.close()
 
     # HTML for gauge
     create_html(gauge_file_path, "gauge_web", img_type="x", new_width=450, new_height=450)
 
-    # Handle errors and Git operations
+    # Process images
     try:
-        gauge_cropped_web_path = "temp_files/gauge_cropped_web.png"
-        if not os.path.exists(gauge_cropped_web_path):
-            raise FileNotFoundError(f"File not found: {gauge_cropped_web_path}")
-        gauge_cropped = Image.open(gauge_cropped_web_path)
-        print("Gauge image processed successfully.")
+        # Process and save cropped images without using tempfile
+        cropped_web_path = erase_bg_and_crop(gauge_file_path, "gauge_cropped_web", 0.55)
+        if cropped_web_path:
+            html_path = create_html(cropped_web_path, "gauge_web", img_type="x", new_width=450, new_height=450)
+            if html_path:
+                html_paths.append(html_path)
+
+
+        cropped_mobile_path = erase_bg_and_crop(gauge_file_path, "gauge_cropped_mobile", 0.35)
+        if cropped_mobile_path:
+            html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="x", new_width=300, new_height=300)
+            if html_path:
+                html_paths.append(html_path)
+
     except Exception as e:
-        print(f"Error processing image: {e}")
+        print(f"Error processing images: {e}")
 
     # Commit HTML files to the test branch
     commit_to_github(html_paths, branch_name="test")
