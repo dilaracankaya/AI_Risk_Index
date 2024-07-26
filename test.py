@@ -48,9 +48,16 @@ def commit_to_github(file_paths, branch_name="test", remote_name="origin"):
         # Switch to the specified branch
         subprocess.run(["git", "checkout", branch_name], check=True)
 
-        # Add and commit all specified files
+        # Add and commit each specified file individually
         for file_path in file_paths:
-            subprocess.run(["git", "add", file_path], check=True)
+            if os.path.isdir(file_path):
+                # Add all files within the directory
+                for root, _, files in os.walk(file_path):
+                    for file in files:
+                        full_path = os.path.join(root, file)
+                        subprocess.run(["git", "add", full_path], check=True)
+            else:
+                subprocess.run(["git", "add", file_path], check=True)
             commit_message = f"Add file: {os.path.basename(file_path)}"
             subprocess.run(["git", "commit", "-m", commit_message], check=True)
 

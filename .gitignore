@@ -5,3 +5,4 @@
 .vscode
 /credentials.env
 __pycache__
+workspace.xml
