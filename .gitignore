@@ -4,3 +4,4 @@
 .DS_Store
 .vscode
 /credentials.env
+__pycache__
