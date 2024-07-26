@@ -33,7 +33,7 @@ def create_html(png_path, output_filename, img_type="web", new_width=None, new_h
     </html>
     """
 
-    html_path = f"temp_files/{output_filename}.html"
+    html_path = f"{output_filename}.html"
     with open(html_path, 'w') as f:
         f.write(html_content)
     print(f"HTML file created at {html_path}")
@@ -78,7 +78,7 @@ def create_his_graph(y_values, filename):
             hovermode="x unified", hoverlabel=dict(bgcolor="white", font_size=16, font_color="black"))
 
         # Define the path for the HTML file
-        html_path = os.path.join("temp_files", f"{filename}.html")
+        html_path = os.path.join("f"{filename}.html")
         fig.write_html(html_path, config={'displayModeBar': False, 'scrollZoom': False, 'doubleClick': False,
                                           'showAxisDragHandles': False})
         return html_path
@@ -113,7 +113,7 @@ def erase_bg_and_crop(input_image, output_filename, resize_factor):
             new_size = (int(cropped_gauge.width * resize_factor), int(cropped_gauge.height * resize_factor))
 
             # Define the path for the resized image
-            output_path = f"temp_files/{output_filename}.png"
+            output_path = f"{output_filename}.png"
             resized_gauge = cropped_gauge.resize(new_size, Image.LANCZOS)
             resized_gauge.save(output_path)
 
@@ -126,9 +126,6 @@ def erase_bg_and_crop(input_image, output_filename, resize_factor):
 def main():
     # Switch to the test branch at the beginning
     subprocess.run(["git", "checkout", "test"], check=True)
-
-    # Create the temp_files directory if it doesn't exist
-    os.makedirs("temp_files", exist_ok=True)
 
     # Create and commit HTML files
     data_and_filenames = [(hist_invcap, "hist_invcap"),
@@ -195,13 +192,13 @@ def main():
     plt.tight_layout(pad=0)
     plt.axis('off')
 
-    gauge_file_path = "temp_files/gauge.png"
+    gauge_file_path = "gauge.png"
     plt.savefig(gauge_file_path, dpi=100, bbox_inches='tight', pad_inches=0, transparent=True)
     plt.close()
 
     # Process images
     try:
-        # Process and save cropped images without using tempfile
+        # Process and save cropped images
         cropped_web_path = erase_bg_and_crop(gauge_file_path, "gauge_cropped_web", 0.55)
         if cropped_web_path:
             html_path = create_html(cropped_web_path, "gauge_web", img_type="x", new_width=450, new_height=390)
@@ -222,13 +219,13 @@ def main():
     commit_to_github(html_paths, branch_name="test")
 
     # Clean up
-    shutil.rmtree("temp_files")
+    #shutil.rmtree("temp_files")
 
     # Switch back to the main branch
     subprocess.run(["git", "checkout", "main"], check=True)
 
     # Clean up
-    shutil.rmtree("temp_files")
+    #shutil.rmtree("temp_files")
 
 if __name__ == "__main__":
     main()
