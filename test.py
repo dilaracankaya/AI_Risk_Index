@@ -35,7 +35,7 @@ def create_html(png_path, output_filename, img_type="web", new_width=None, new_h
     </html>
     """
 
-    html_path = f"{output_filename}.html"
+    html_path = f"temp_files/{output_filename}.html"
     with open(html_path, 'w') as f:
         f.write(html_content)
     print(f"HTML file created at {html_path}")
