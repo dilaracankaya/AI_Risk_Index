@@ -206,7 +206,7 @@ def main():
     plt.close()
 
     # HTML for gauge
-    create_html(gauge_file_path, "gauge_web", img_type="x", new_width=450, new_height=450)
+    create_html(gauge_file_path, "gauge_web", img_type="x", new_width=450, new_height=400)
 
     # Process images
     try:
