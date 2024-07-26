@@ -46,18 +46,12 @@ def commit_to_github(file_paths, branch_name="test", remote_name="origin"):
         # Switch to the specified branch
         subprocess.run(["git", "checkout", branch_name], check=True)
 
-        # Add and commit each specified file individually
+        # Add and commit only the HTML files
         for file_path in file_paths:
-            if os.path.isdir(file_path):
-                # Add all files within the directory
-                for root, _, files in os.walk(file_path):
-                    for file in files:
-                        full_path = os.path.join(root, file)
-                        subprocess.run(["git", "add", full_path], check=True)
-            else:
+            if file_path.endswith(".html"):
                 subprocess.run(["git", "add", file_path], check=True)
-            commit_message = f"Add file: {os.path.basename(file_path)}"
-            subprocess.run(["git", "commit", "-m", commit_message], check=True)
+                commit_message = f"Add file: {os.path.basename(file_path)}"
+                subprocess.run(["git", "commit", "-m", commit_message], check=True)
 
         # Push the branch to remote
         subprocess.run(["git", "push", "-u", remote_name, branch_name], check=True)
@@ -210,14 +204,14 @@ def main():
         # Process and save cropped images without using tempfile
         cropped_web_path = erase_bg_and_crop(gauge_file_path, "gauge_cropped_web", 0.55)
         if cropped_web_path:
-            html_path = create_html(cropped_web_path, "gauge_web", img_type="x", new_width=450, new_height=400)
+            html_path = create_html(cropped_web_path, "gauge_web", img_type="x", new_width=450, new_height=390)
             if html_path:
                 html_paths.append(html_path)
 
 
         cropped_mobile_path = erase_bg_and_crop(gauge_file_path, "gauge_cropped_mobile", 0.35)
         if cropped_mobile_path:
-            html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="x", new_width=300, new_height=300)
+            html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="x", new_width=300, new_height=260)
             if html_path:
                 html_paths.append(html_path)
 
@@ -226,6 +220,9 @@ def main():
 
     # Commit HTML files to the test branch
     commit_to_github(html_paths, branch_name="test")
+
+    # Clean up
+    shutil.rmtree("temp_files")
 
     # Switch back to the main branch
     subprocess.run(["git", "checkout", "main"], check=True)
