@@ -44,7 +44,6 @@ def create_html(png_path, output_filename, img_type="web", new_width=None, new_h
 
 def commit_to_github(file_paths, branch_name="test", remote_name="origin"):
     try:
-        # Switch to the specified branch
         subprocess.run(["git", "checkout", branch_name], check=True)
 
         # Add and commit only the HTML files
@@ -78,7 +77,6 @@ def create_his_graph(y_values, filename):
             plot_bgcolor='white', paper_bgcolor='rgba(0,0,0,0)',
             hovermode="x unified", hoverlabel=dict(bgcolor="white", font_size=16, font_color="black"))
 
-        # Define the path for the HTML file
         html_path = os.path.join(f"{filename}.html")
         fig.write_html(html_path, config={'displayModeBar': False, 'scrollZoom': False, 'doubleClick': False,
                                           'showAxisDragHandles': False})
@@ -89,7 +87,7 @@ def create_his_graph(y_values, filename):
         return None
 
 
-def erase_bg_and_crop(input_image, output_filename, resize_factor):
+def erase_bg_and_crop(input_image, resize_factor):
     try:
         with Image.open(input_image) as img:
             gray_img = img.convert('L')
@@ -113,15 +111,10 @@ def erase_bg_and_crop(input_image, output_filename, resize_factor):
             cropped_gauge = img.crop((new_left, new_top, new_right, new_bottom))
             new_size = (int(cropped_gauge.width * resize_factor), int(cropped_gauge.height * resize_factor))
 
-            # Create a temporary file for the resized image
             with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
                 output_path = temp_file.name
                 resized_gauge = cropped_gauge.resize(new_size, Image.LANCZOS)
                 resized_gauge.save(output_path)
-            # # Define the path for the resized image
-            # output_path = f"{output_filename}.png"
-            # resized_gauge = cropped_gauge.resize(new_size, Image.LANCZOS)
-            # resized_gauge.save(output_path)
 
             return output_path
     except Exception as e:
@@ -133,7 +126,6 @@ def main():
     # Switch to the test branch at the beginning
     subprocess.run(["git", "checkout", "test"], check=True)
 
-    # Create and commit HTML files
     data_and_filenames = [(hist_invcap, "hist_invcap"),
                           (hist_invsaf, "hist_invsaf"),
                           (hist_rsa, "hist_rsa"),
@@ -198,10 +190,6 @@ def main():
     plt.tight_layout(pad=0)
     plt.axis('off')
 
-    # gauge_file_path = "gauge.png"
-    # plt.savefig(gauge_file_path, dpi=100, bbox_inches='tight', pad_inches=0, transparent=True)
-
-    # Create a temporary file for the gauge chart
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
         gauge_file_path = temp_file.name
         plt.savefig(gauge_file_path, dpi=100, bbox_inches='tight', pad_inches=0, transparent=True)
@@ -210,13 +198,11 @@ def main():
 
     # Process images
     try:
-        # Process and save cropped images
         cropped_web_path = erase_bg_and_crop(gauge_file_path, "gauge_cropped_web", 0.55)
         if cropped_web_path:
             html_path = create_html(cropped_web_path, "gauge_web", img_type="x", new_width=450, new_height=390)
             if html_path:
                 html_paths.append(html_path)
-
 
         cropped_mobile_path = erase_bg_and_crop(gauge_file_path, "gauge_cropped_mobile", 0.35)
         if cropped_mobile_path:
@@ -227,24 +213,17 @@ def main():
     except Exception as e:
         print(f"Error processing images: {e}")
 
-    # Commit HTML files to the test branch
     commit_to_github(html_paths, branch_name="test")
 
-    # Clean up temporary files
     os.remove(gauge_file_path)
     if cropped_web_path:
         os.remove(cropped_web_path)
     if cropped_mobile_path:
         os.remove(cropped_mobile_path)
 
-    # Clean up
-    #shutil.rmtree("temp_files")
-
     # Switch back to the main branch
     subprocess.run(["git", "checkout", "main"], check=True)
 
-    # Clean up
-    #shutil.rmtree("temp_files")
 
 if __name__ == "__main__":
     main()
