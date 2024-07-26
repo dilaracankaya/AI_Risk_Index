@@ -78,8 +78,7 @@ def create_his_graph(y_values, filename):
             hovermode="x unified", hoverlabel=dict(bgcolor="white", font_size=16, font_color="black"))
 
         html_path = os.path.join(f"{filename}.html")
-        fig.write_html(html_path, config={'displayModeBar': False, 'scrollZoom': False, 'doubleClick': False,
-                                          'showAxisDragHandles': False})
+        fig.write_html(html_path, config={'displayModeBar': False, 'scrollZoom': False, 'showAxisDragHandles': False})
         return html_path
 
     except Exception as e:
@@ -200,13 +199,13 @@ def main():
     try:
         cropped_web_path = erase_bg_and_crop(gauge_file_path, "gauge_cropped_web", 0.55)
         if cropped_web_path:
-            html_path = create_html(cropped_web_path, "gauge_web", img_type="x", new_width=450, new_height=390)
+            html_path = create_html(cropped_web_path, "gauge_web", img_type="x", new_width=450, new_height=380)
             if html_path:
                 html_paths.append(html_path)
 
         cropped_mobile_path = erase_bg_and_crop(gauge_file_path, "gauge_cropped_mobile", 0.35)
         if cropped_mobile_path:
-            html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="x", new_width=300, new_height=260)
+            html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="x", new_width=300, new_height=250)
             if html_path:
                 html_paths.append(html_path)
 
