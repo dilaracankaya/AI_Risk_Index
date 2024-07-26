@@ -62,6 +62,33 @@ def commit_to_github(file_paths, branch_name="test", remote_name="origin"):
         print(f"An error occurred: {e}")
 
 
+def create_his_graph(y_values, filename):
+    try:
+        end_date = datetime.today()
+        end_date -= timedelta(days=end_date.weekday() % 7)
+        dates = [end_date - timedelta(weeks=i) for i in range(len(y_values))]
+        date_labels = [date.strftime('%b %d') for date in reversed(dates)]
+
+        fig = go.Figure(data=go.Scatter(x=date_labels, y=y_values, mode='lines', line=dict(color='blue')))
+        y_range = [min(y_values) - (max(y_values) - min(y_values)) * 0.1, max(y_values)]
+        fig.update_layout(
+            margin=dict(l=0, r=0, t=0, b=0),
+            yaxis=dict(side='right', gridcolor='lightgrey', autorange=True, range=y_range),
+            xaxis=dict(gridcolor='lightgrey', showline=True, linecolor='black', linewidth=2, mirror=True),
+            plot_bgcolor='white', paper_bgcolor='rgba(0,0,0,0)',
+            hovermode="x unified", hoverlabel=dict(bgcolor="white", font_size=16, font_color="black"))
+
+        # Define the path for the HTML file
+        html_path = os.path.join("temp_files", f"{filename}.html")
+        fig.write_html(html_path, config={'displayModeBar': False, 'scrollZoom': False, 'doubleClick': False,
+                                          'showAxisDragHandles': False})
+        return html_path
+
+    except Exception as e:
+        print(f"Error creating graph: {e}")
+        return None
+
+
 def main():
     # Switch to the test branch at the beginning
     subprocess.run(["git", "checkout", "test"], check=True)
