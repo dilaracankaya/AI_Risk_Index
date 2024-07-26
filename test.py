@@ -42,7 +42,7 @@ def create_html(png_path, output_filename, img_type="web", new_width=None, new_h
     return html_path
 
 
-def commit_to_github(file_paths, branch_name="test", remote_name="origin"):
+def commit_to_github(file_paths, branch_name="gh-pages", remote_name="origin"):
     try:
         subprocess.run(["git", "checkout", branch_name], check=True)
 
@@ -122,8 +122,8 @@ def erase_bg_and_crop(input_image, resize_factor):
 
 
 def main():
-    # Switch to the test branch at the beginning
-    subprocess.run(["git", "checkout", "test"], check=True)
+    # Switch to the gh-pages branch at the beginning
+    subprocess.run(["git", "checkout", "gh-pages"], check=True)
 
     data_and_filenames = [(hist_invcap, "hist_invcap"),
                           (hist_invsaf, "hist_invsaf"),
@@ -212,7 +212,7 @@ def main():
     except Exception as e:
         print(f"Error processing images: {e}")
 
-    commit_to_github(html_paths, branch_name="test")
+    commit_to_github(html_paths, branch_name="gh-pages")
 
     os.remove(gauge_file_path)
     if cropped_web_path:
