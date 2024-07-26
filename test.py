@@ -1,12 +1,12 @@
 import os
-import tempfile
 import shutil
-import base64
 import subprocess
-import numpy as np
+import tempfile
 import plotly.graph_objects as go
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime, timedelta
+import base64
+import numpy as np
 from common import *
 from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi
 
@@ -35,7 +35,7 @@ def create_html(png_path, output_filename, img_type="web", new_width=None, new_h
     </html>
     """
 
-    html_path = f"temp_files/{output_filename}.html"
+    html_path = f"{output_filename}.html"
     with open(html_path, 'w') as f:
         f.write(html_content)
     print(f"HTML file created at {html_path}")
@@ -43,80 +43,41 @@ def create_html(png_path, output_filename, img_type="web", new_width=None, new_h
     return html_path
 
 
-def commit_to_github(directory, branch_name="test", remote_name="origin"):
+def commit_to_github(file_paths, branch_name="test", remote_name="origin"):
     try:
-        # Stash any local changes to avoid conflicts
-        subprocess.run(["git", "stash"], check=True)
-
         # Switch to the specified branch
         subprocess.run(["git", "checkout", branch_name], check=True)
 
-        # Add and commit all HTML files in the directory
-        for file in os.listdir(directory):
-            if file.endswith(".html"):
-                file_path = os.path.join(directory, file)
-                subprocess.run(["git", "add", file_path], check=True)
-                commit_message = f"Add HTML file: {file}"
-                subprocess.run(["git", "commit", "-m", commit_message], check=True)
+        # Add and commit all specified files
+        for file_path in file_paths:
+            subprocess.run(["git", "add", file_path], check=True)
+            commit_message = f"Add file: {os.path.basename(file_path)}"
+            subprocess.run(["git", "commit", "-m", commit_message], check=True)
 
         # Push the branch to remote
         subprocess.run(["git", "push", "-u", remote_name, branch_name], check=True)
-        print(f"HTML files committed to branch: {branch_name}")
+        print(f"Files committed to branch: {branch_name}")
 
     except subprocess.CalledProcessError as e:
         print(f"An error occurred: {e}")
-    finally:
-        # Switch back to the main branch
-        subprocess.run(["git", "checkout", "main"], check=True)
-        # Restore stashed changes
-        subprocess.run(["git", "stash", "pop"], check=True)
-        # Cleanup the temp_files directory
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-
-
-def create_his_graph(y_values, filename):
-    try:
-        end_date = datetime.today()
-        end_date -= timedelta(days=end_date.weekday() % 7)
-        dates = [end_date - timedelta(weeks=i) for i in range(len(y_values))]
-        date_labels = [date.strftime('%b %d') for date in reversed(dates)]
-
-        fig = go.Figure(data=go.Scatter(x=date_labels, y=y_values, mode='lines', line=dict(color='blue')))
-        y_range = [min(y_values) - (max(y_values) - min(y_values)) * 0.1, max(y_values)]
-        fig.update_layout(
-            margin=dict(l=0, r=0, t=0, b=0),
-            yaxis=dict(side='right', gridcolor='lightgrey', autorange=True, range=y_range),
-            xaxis=dict(gridcolor='lightgrey', showline=True, linecolor='black', linewidth=2, mirror=True),
-            plot_bgcolor='white', paper_bgcolor='rgba(0,0,0,0)',
-            hovermode="x unified", hoverlabel=dict(bgcolor="white", font_size=16, font_color="black"))
-
-        # Define the path for the HTML file
-        html_path = os.path.join("temp_files", f"{filename}.html")
-        fig.write_html(html_path, config={'displayModeBar': False, 'scrollZoom': False, 'doubleClick': False,
-                                          'showAxisDragHandles': False})
-        return html_path
-
-    except Exception as e:
-        print(f"Error creating graph: {e}")
-        return None
 
 
 def main():
-    # Create temp_files directory if not exists
-    os.makedirs("temp_files", exist_ok=True)
+    # Switch to the test branch at the beginning
+    subprocess.run(["git", "checkout", "test"], check=True)
 
-    # Create and commit graphs
+    # Create and commit HTML files
     data_and_filenames = [(hist_invcap, "hist_invcap"),
                           (hist_invsaf, "hist_invsaf"),
                           (hist_rsa, "hist_rsa"),
                           (hist_psa, "hist_psa"),
                           (hist_airi, "hist_airi")]
 
+    html_paths = []
     for data, filename in data_and_filenames:
         html_path = create_his_graph(data, filename)
         if html_path:
-            commit_to_github("temp_files", branch_name="test")
+            html_paths.append(html_path)
 
     # Gauge chart
     def deg_to_rad(deg):
@@ -186,9 +147,19 @@ def main():
     except Exception as e:
         print(f"Error processing image: {e}")
 
-    # Commit and cleanup
-    commit_to_github("temp_files", branch_name="test")
+        # Commit HTML files and the .py file to the test branch
+        script_path = 'calc+viz.py'
+        file_paths = html_paths + [script_path]
+        commit_to_github(file_paths, branch_name="test")
 
+        # Switch back to the main branch and commit the .py file
+        subprocess.run(["git", "checkout", "main"], check=True)
+        subprocess.run(["git", "add", script_path], check=True)
+        subprocess.run(["git", "commit", "-m", "Update script file"], check=True)
+        subprocess.run(["git", "push"], check=True)
 
-if __name__ == "__main__":
-    main()
+        # Clean up
+        shutil.rmtree("temp_files")
+
+    if __name__ == "__main__":
+        main()
