@@ -205,9 +205,6 @@ def main():
     plt.savefig(gauge_file_path, dpi=100, bbox_inches='tight', pad_inches=0, transparent=True)
     plt.close()
 
-    # HTML for gauge
-    create_html(gauge_file_path, "gauge_web", img_type="x", new_width=450, new_height=400)
-
     # Process images
     try:
         # Process and save cropped images without using tempfile
