@@ -15,7 +15,7 @@ query_rsa = "AI (regulation OR regulations OR regulatory OR policy OR policies O
 #tweets_df_rsa.head()
 
 # Process
-process_df("rsa").head()
+# process_df("rsa").head()
 # TODO tweets_df_rsa["Stance_weighted_reach"].describe().T
 
 # Manual tweaks specific to this dataset
@@ -46,11 +46,11 @@ change_classification(tweets_df_rsa, "marketplace improving efficiency transpare
 recalculate_reclassification(tweets_df_rsa)
 """
 
-tweets_df_rsa.groupby("Classification")["Stance_0to100"].agg(["count", "mean"])
+# tweets_df_rsa.groupby("Classification")["Stance_0to100"].agg(["count", "mean"])
 
 # Final score of RSA
 hist_rsa = [40.12, 42.15, 43.67, 44.88, 46.20, 47.35, 48.58, 49.12, 49.87, 50.24, 50.67, 51.22, 50.89]
-final_rsa = tweets_df_rsa["Stance_0to100"].mean() # 50.89
+# final_rsa = tweets_df_rsa["Stance_0to100"].mean() # 50.89
 final_rsa = 50.89
 
 
@@ -67,7 +67,7 @@ query_psa = "AI (governance OR policy OR regulation OR capabilities) OR (#AIgove
 #tweets_df_psa.head()
 
 # Process
-process_df("psa").head()
+# process_df("psa").head()
 # TODO tweets_df_psa["Stance_weighted_reach"].describe().T
 
 # Manual tweaks specific to this dataset
@@ -92,11 +92,11 @@ change_classification(tweets_df_psa, "first came apple product classified", "Cap
 recalculate_reclassification(tweets_df_psa)
 """
 
-tweets_df_psa.groupby("Classification")["Stance_0to100"].agg(["count", "mean"])
+# tweets_df_psa.groupby("Classification")["Stance_0to100"].agg(["count", "mean"])
 
 # Final score of PSA
 hist_psa = [62.34, 63.56, 65.12, 66.78, 67.89, 68.45, 68.90, 69.12, 69.45, 69.78, 70.12, 70.50, 70.77]
-final_psa = tweets_df_psa["Stance_0to100"].mean() # 70.77
+# final_psa = tweets_df_psa["Stance_0to100"].mean() # 70.77
 final_psa = 70.77
 
 

@@ -42,6 +42,8 @@ def create_html(png_path, output_filename, img_type="web", new_width=None, new_h
 
 
 def commit_to_github(file_path, branch_name="test", remote_name="origin"):
+    print("\n")
+    print(f"{file_path}:")
     try:
         # Stash any local changes to avoid conflicts
         subprocess.run(["git", "stash"], check=True)
@@ -65,8 +67,16 @@ def commit_to_github(file_path, branch_name="test", remote_name="origin"):
     except subprocess.CalledProcessError as e:
         print(f"An error occurred: {e}")
     finally:
+        # Switch back to the main branch
+        subprocess.run(["git", "checkout", "main"], check=True)
         # Restore stashed changes
         subprocess.run(["git", "stash", "pop"], check=True)
+        # Delete the file from the working directory in main branch
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        # Cleanup the temporary directory after use
+        #if temp_dir and os.path.exists(temp_dir):
+         #   shutil.rmtree(temp_dir)
 
 
 ## Indicator history charts
@@ -84,11 +94,14 @@ def create_his_graph(y_values, filename):
             yaxis=dict(side='right', gridcolor='lightgrey', autorange=True, range=y_range),
             xaxis=dict(gridcolor='lightgrey', showline=True, linecolor='black', linewidth=2, mirror=True),
             plot_bgcolor='white', paper_bgcolor='rgba(0,0,0,0)',
-            hovermode="x unified", hoverlabel=dict(bgcolor="white", font_size=16, font_color="black")
-        )
-        html_path = f"{filename}.html"
-        fig.write_html(html_path, config={'displayModeBar': False, 'scrollZoom': False})
+            hovermode="x unified", hoverlabel=dict(bgcolor="white", font_size=16, font_color="black"))
+
+        # Define the path for the HTML file
+        html_path = os.path.join("temp_files", f"{filename}.html")
+        fig.write_html(html_path, config={'displayModeBar': False, 'scrollZoom': False, 'doubleClick': False,
+                                          'showAxisDragHandles': False})
         return html_path
+
     except Exception as e:
         print(f"Error creating graph: {e}")
         return None
@@ -105,6 +118,7 @@ for data, filename in data_and_filenames:
     if html_path:
         commit_to_github(html_path, branch_name="test")
 
+shutil.rmtree("temp_files")
 
 
 ## Gauge chart for index home page
