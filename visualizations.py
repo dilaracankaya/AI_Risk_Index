@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import plotly as plt
 import plotly.graph_objects as go
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime, timedelta
