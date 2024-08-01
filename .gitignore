@@ -1,6 +1,6 @@
 # .gitignore
 .env
-/credentials.env
+credentials.env
 
 .idea/
 .xml
@@ -8,6 +8,3 @@
 .vscode
 
 __pycache__
-.mp4
-
-ignore.py
