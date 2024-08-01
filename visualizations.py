@@ -117,6 +117,7 @@ def main():
     # Switch to the gh-pages branch at the beginning
     subprocess.run(["git", "checkout", "gh-pages"], check=True)
 
+    # Create historical line charts
     data_and_filenames = [(hist_invcap, "hist_invcap"),
                           (hist_invsaf, "hist_invsaf"),
                           (hist_rsa, "hist_rsa"),
@@ -129,7 +130,7 @@ def main():
         if html_path:
             html_paths.append(html_path)
 
-    # Gauge chart
+    # Create gauge chart
     def deg_to_rad(deg):
         return deg * np.pi / 180
 
@@ -185,9 +186,8 @@ def main():
         gauge_file_path = temp_file.name
         plt.savefig(gauge_file_path, dpi=100, bbox_inches='tight', pad_inches=0, transparent=True)
     plt.close()
-    plt.close()
 
-    # Process images
+    # Create HTML gauge chart for desktop and mobile
     try:
         cropped_web_path = erase_bg_and_crop(gauge_file_path, 0.55)
         if cropped_web_path:
@@ -204,13 +204,70 @@ def main():
     except Exception as e:
         print(f"Error processing images: {e}")
 
+    # Create image for X post
+    try:
+        background = Image.open('background.png')
+        gauge_cropped = Image.open(cropped_web_path)  # This assumes the image exists
+
+        # Resize background
+        new_width = int(gauge_cropped.width * 1.2)
+        new_height = new_width  # Ensure background is square
+        gauge_x = background.resize((new_width, new_height), Image.LANCZOS)
+
+        # Center the gauge_cropped on the background and lower it a bit
+        bg_width, bg_height = gauge_x.size
+        gauge_width, gauge_height = gauge_cropped.size
+        x_center = (bg_width - gauge_width) // 2
+        y_center = (bg_height - gauge_height) // 2 + 48  # Lower the gauge by 48 pixels
+        gauge_x.paste(gauge_cropped, (x_center, y_center), gauge_cropped)
+
+        # Draw text on the image
+        draw = ImageDraw.Draw(gauge_x)
+        font_path = "/Library/Fonts/Helvetica.ttc"  # Make sure this path is correct
+        font_title = ImageFont.truetype(font_path, 50)  # For title text
+        font_subtitle = ImageFont.truetype(font_path, 30)  # For subtitle text
+        font_footer = ImageFont.truetype(font_path, 20)
+        title = "AI Risk Index"
+        subtitle = "Quantifying misaligned AI risk"
+        footer_left = "22 Jul 2024"
+        footer_right = "airiskindex.com"
+
+        # Margins
+        left_margin = 30
+        right_margin = 30
+
+        # Draw the title
+        draw.text((left_margin, 40), title, fill="black", font=font_title)
+        # Draw the subtitle
+        draw.text((left_margin, 95), subtitle, fill="#6b6b6b", font=font_subtitle)
+        # Draw the divider line
+        line_y = bg_height - 55
+        draw.line([(left_margin, line_y), (bg_width - right_margin, line_y)], fill="darkgrey", width=2)
+        # Draw the footer left
+        draw.text((left_margin, bg_height - 45), footer_left, fill="darkgrey", font=font_footer)
+        # Draw the footer right
+        bbox = draw.textbbox((0, 0), footer_right, font=font_footer)
+        text_width = bbox[2] - bbox[0]
+        draw.text((bg_width - text_width - right_margin, bg_height - 45), footer_right, fill="darkgrey",
+                  font=font_footer)
+
+        # Save the final image
+        gauge_x_path = "gauge_x.png"
+        gauge_x.save(gauge_x_path)
+
+        # html_x_path = create_html(gauge_x_path, "gauge_x", img_type="x", new_width=new_width, new_height=new_height)
+        # if html_x_path:
+        #     html_paths.append(html_x_path)
+
+    except Exception as e:
+        print(f"Error creating X image: {e}")
+
     commit_to_github(html_paths, branch_name="gh-pages")
 
     os.remove(gauge_file_path)
-    if cropped_web_path:
-        os.remove(cropped_web_path)
-    if cropped_mobile_path:
-        os.remove(cropped_mobile_path)
+    os.remove(cropped_web_path)
+    os.remove(cropped_mobile_path)
+    os.remove(gauge_x_path)
 
     # Switch back to the main branch
     subprocess.run(["git", "checkout", "main"], check=True)
