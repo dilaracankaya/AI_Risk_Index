@@ -10,8 +10,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import shutil
 import subprocess
-import plotly as plt
-import plotly.express as px
+import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from PIL import Image, ImageDraw, ImageFont
 from nltk.corpus import stopwords
