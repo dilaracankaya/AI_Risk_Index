@@ -1,13 +1,3 @@
-import os
-import shutil
-import subprocess
-import plotly as plt
-import plotly.express as px
-import plotly.graph_objects as go
-from PIL import Image, ImageDraw, ImageFont
-from datetime import datetime, timedelta
-import base64
-import tempfile
 from common import *
 from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi
 

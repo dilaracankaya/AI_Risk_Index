@@ -2,6 +2,18 @@ from warnings import filterwarnings
 import numpy as np
 import pandas as pd
 import tweepy
+import os
+import base64
+import tempfile
+import calendar
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
+import shutil
+import subprocess
+import plotly as plt
+import plotly.express as px
+import plotly.graph_objects as go
+from PIL import Image, ImageDraw, ImageFont
 from nltk.corpus import stopwords
 from nltk.sentiment import SentimentIntensityAnalyzer
 from textblob import Word, TextBlob

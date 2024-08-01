@@ -1,8 +1,4 @@
 from common import *
-import os
-import calendar
-from datetime import datetime, timedelta
-from dotenv import load_dotenv
 # ! "If a search request does not specify a start_time, end_time, or since_id request parameter, the end_time will default to "now" (actually 30 seconds before the time of query) and the start_time will default to seven days ago."
 
 load_dotenv("credentials.env")
