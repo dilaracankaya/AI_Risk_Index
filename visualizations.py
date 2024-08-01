@@ -267,8 +267,6 @@ def main():
     os.remove(gauge_file_path)
     os.remove(cropped_web_path)
     os.remove(cropped_mobile_path)
-    if gauge_x_path:
-        os.remove(gauge_x_path)
 
     # Switch back to the main branch
     subprocess.run(["git", "checkout", "main"], check=True)
