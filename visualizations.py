@@ -191,13 +191,13 @@ def main():
     try:
         cropped_web_path = erase_bg_and_crop(gauge_file_path, 0.55)
         if cropped_web_path:
-            html_path = create_html(cropped_web_path, "gauge_web", img_type="x", new_width=450, new_height=380)
+            html_path = create_html(cropped_web_path, "gauge_web", img_type="x", new_width=450, new_height=360)
             if html_path:
                 html_paths.append(html_path)
 
         cropped_mobile_path = erase_bg_and_crop(gauge_file_path, 0.35)
         if cropped_mobile_path:
-            html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="x", new_width=300, new_height=250)
+            html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="x", new_width=300, new_height=240)
             if html_path:
                 html_paths.append(html_path)
 
