@@ -284,7 +284,7 @@ recalculate_reclassification(tweets_df_rsa)
 
 # Final score of RSA
 final_rsa = round(tweets_df_rsa["Stance_weighted_0to100"].mean(), 2)
-hist_rsa = update_csv_and_list(final_rsa, "hist_rsa")
+# hist_rsa = update_csv_and_list(final_rsa, "hist_rsa")
 
 
 # PUBLIC SENTIMENT ANALYSIS
@@ -312,11 +312,15 @@ recalculate_reclassification(tweets_df_psa)
 
 # Final score of PSA
 final_psa = round(tweets_df_psa["Stance_weighted_0to100"].mean(), 2)
-hist_psa = update_csv_and_list(final_psa, "hist_psa")
+# hist_psa = update_csv_and_list(final_psa, "hist_psa")
 
 
 
 # INVESTMENTS
+# TODO these will be deleted
+hist_rsa = [40.12, 42.15, 43.67, 44.88, 46.20, 47.35, 48.58, 49.12, 49.87, 50.24, 50.67, 51.22, 50.89, 59.12]
+hist_psa = [62.34, 63.56, 65.12, 66.78, 67.89, 68.45, 68.90, 69.12, 69.45, 69.78, 70.12, 70.50, 70.77, 59.27]
+
 # TODO should these also use update_csv_and_list? Because unless saved into a csv, the data and date calculated separately may fall out of sync.
 hist_invcap = [95.39, 95.35, 97.02, 97.71, 97.67, 97.03, 95.93, 96.04, 96.03, 94.96, 94.84, 94.01, 95.29, 94.44]
 hist_invsaf = [17.47, 18.69, 19.58, 24.13, 19.44, 14.70, 15.79, 11.08, 11.55, 11.57, 21.16, 30.41, 30.76, 26.54]
