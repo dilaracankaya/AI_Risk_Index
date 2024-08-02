@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 from warnings import filterwarnings
 filterwarnings('ignore')
 
-from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi
+from indicators import debug, airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi
 
 # Debugging print to check airi_score after import
 print(f"Imported airi_score: {airi_score}")
