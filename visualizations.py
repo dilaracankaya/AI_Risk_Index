@@ -1,6 +1,8 @@
 from common import *
 from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi
 
+# Debugging print to check airi_score after import
+print(f"Imported airi_score: {airi_score}")
 
 def create_html(png_path, output_filename, img_type="web", new_width=None, new_height=None):
     try:
@@ -145,6 +147,8 @@ def main():
 
     highlighted_edgecolor = "#6b6b6b"
     default_edgecolor = "#D3D3DA"
+
+    print(f"Imported airi_score 2: {airi_score}")
 
     for i, v in enumerate(values):
         print(f"Checking index {i}: v = {v}, v - 20 = {v - 20}, condition = {v >= airi_score > (v - 20)}")
