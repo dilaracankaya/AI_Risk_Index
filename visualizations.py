@@ -49,7 +49,7 @@ def commit_to_github(file_paths, branch_name="gh-pages", remote_name="origin"):
     try:
         subprocess.run(["git", "checkout", branch_name], check=True)
 
-        # Add and commit only the HTML files
+        # Add and commit only the HTML and PNG files
         for file_path in file_paths:
             if file_path.endswith(".html") or file_path.endswith(".png"):
                 subprocess.run(["git", "add", file_path], check=True)
@@ -274,7 +274,9 @@ def main():
         draw.text((bg_width - text_width - right_margin, bg_height - 45), footer_right, fill="darkgrey",
                   font=font_footer)
 
-        gauge_x.save("gauge_x.png")
+        gauge_x_path = "gauge_x.png"
+        gauge_x.save(gauge_x_path)
+        file_paths.append(gauge_x_path)
         print("-------saved it normally, now working with tempfile")
 
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
