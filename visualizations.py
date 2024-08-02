@@ -272,17 +272,14 @@ def main():
         draw.text((bg_width - text_width - right_margin, bg_height - 45), footer_right, fill="darkgrey",
                   font=font_footer)
 
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
-            gauge_x_path = temp_file.name
-            gauge_x.save(gauge_x_path)
+        # Save the final image
+        gauge_x_path = "gauge_x.png"
+        gauge_x.save(gauge_x_path)
+        file_paths.append(gauge_x_path)
 
         # Save the final image
         # gauge_x_path = "gauge_x.png"
         # #gauge_x.save(gauge_x_path)
-
-        if gauge_x_path:
-            file_paths.append(gauge_x_path)
-
         # html_x_path = create_html(gauge_x_path, "gauge_x", img_type="x", new_width=new_width, new_height=new_height)
         # if html_x_path:
         #     html_paths.append(html_x_path)
@@ -296,7 +293,6 @@ def main():
     os.remove(cropped_web_path)
     os.remove(cropped_mobile_path)
     os.remove(gauge_x_path)
-
 
     # Switch back to the main branch
     subprocess.run(["git", "checkout", "main"], check=True)
