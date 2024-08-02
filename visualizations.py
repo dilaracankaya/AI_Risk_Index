@@ -1,4 +1,16 @@
-from common import *
+import os
+import numpy as np
+import pandas as pd
+import base64
+import tempfile
+import subprocess
+from datetime import datetime, timedelta
+import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+from PIL import Image, ImageDraw, ImageFont
+from warnings import filterwarnings
+filterwarnings('ignore')
+
 from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi
 
 # Debugging print to check airi_score after import
