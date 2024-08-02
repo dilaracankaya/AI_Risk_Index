@@ -280,6 +280,9 @@ def main():
     values = [100, 80, 60, 40, 20, 0]
     airi_score = 59.84  # Example score
 
+    def deg_to_rad(deg):
+        return deg * np.pi / 180
+
     # Log output for debugging
     for i, v in enumerate(values):
         print(f"Checking index {i}: v = {v}, v - 20 = {v - 20}, condition = {v >= airi_score > (v - 20)}")
