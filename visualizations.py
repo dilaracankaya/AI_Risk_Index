@@ -273,15 +273,14 @@ def main():
                   font=font_footer)
 
         gauge_x.save("gauge_x.png")
-
         print("-------saved it normally, now working with tempfile")
+
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
             gauge_x_path = temp_file.name
             gauge_x.save(gauge_x_path)
-            print(f"Gauge X image saved at {gauge_x_path}")
-
-        if gauge_x_path:
             file_paths.append(gauge_x_path)
+            print(f"Gauge X image saved at {gauge_x_path}")
+        print(len(file_paths))
 
         # Save the final image
         # gauge_x_path = "gauge_x.png"
