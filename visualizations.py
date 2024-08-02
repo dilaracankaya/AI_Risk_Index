@@ -272,6 +272,9 @@ def main():
         draw.text((bg_width - text_width - right_margin, bg_height - 45), footer_right, fill="darkgrey",
                   font=font_footer)
 
+        gauge_x.save("gauge_x.png")
+
+        print("-------saved it normally, now working with tempfile")
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
             gauge_x_path = temp_file.name
             gauge_x.save(gauge_x_path)
