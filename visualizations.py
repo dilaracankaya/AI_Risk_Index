@@ -277,14 +277,14 @@ def main():
         gauge_x_path = "gauge_x.png"
         gauge_x.save(gauge_x_path)
         file_paths.append(gauge_x_path)
-        print("-------saved it normally, now working with tempfile")
+        commit_to_github(gauge_x_path, branch_name="gh-pages")
 
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
-            gauge_x_path = temp_file.name
-            gauge_x.save(gauge_x_path)
-            file_paths.append(gauge_x_path)
-            print(f"Gauge X image saved at {gauge_x_path}")
-        print(len(file_paths))
+        # with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
+        #     gauge_x_path = temp_file.name
+        #     gauge_x.save(gauge_x_path)
+        #     file_paths.append(gauge_x_path)
+        #     print(f"Gauge X image saved at {gauge_x_path}")
+        # print(len(file_paths))
 
         # Save the final image
         # gauge_x_path = "gauge_x.png"
