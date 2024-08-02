@@ -190,11 +190,15 @@ def update_csv_and_list(new_value, csv_name):
 
     updated_hist_list = []
     # Read all data from the CSV file
-    with open(rf"{csv_name}", "r") as f:
+    with open(csv_name, "r") as f:
         reader = csv.reader(f)
+        headers = next(reader, None)  # Read and skip the header row
         for row in reader:
             if len(row) > 1:  # Ensure the row has at least two columns
-                updated_hist_list.append(float(row[1]))  # Convert the second column to float and append
+                try:
+                    updated_hist_list.append(float(row[1]))  # Convert the second column to float and append
+                except ValueError:
+                    pass  # Skip rows where conversion fails
 
     return updated_hist_list
 
