@@ -1,7 +1,7 @@
 from common import *
 
-invcap = [95.14, 95.53, 95.39, 95.35, 97.02, 97.71, 97.67, 97.03, 95.93, 96.04, 96.03, 94.78, 92.94]
-invsaf = [87.97, 86.03, 82.53, 81.31, 80.42, 75.87, 80.56, 85.30, 84.21, 88.92, 88.45, 88.18, 76.88]
+hist_invcap = [95.39, 95.35, 97.02, 97.71, 97.67, 97.03, 95.93, 96.04, 96.03, 94.96, 94.84, 94.01, 95.29, 94.44]
+hist_invsaf = [17.47, 18.69, 19.58, 24.13, 19.44, 14.70, 15.79, 11.08, 11.55, 11.57, 21.16, 30.41, 30.76, 26.54]
 
 
 today = datetime.today()
@@ -10,13 +10,13 @@ if today.weekday() == 0:  # Monday is 0
 else:
     end_date = today - timedelta(days=today.weekday())
 
-dates = [end_date - timedelta(weeks=i) for i in range(len(invcap))]
+dates = [end_date - timedelta(weeks=i) for i in range(len(hist_invcap))]
 date_labels = [date.strftime('%b %d') for date in reversed(dates)]
 
 
 # Create DataFrames
-investments_capabilities = pd.DataFrame({'Date': date_labels, 'Investment_Amount_(3-Week_SMA)': invcap})
+investments_capabilities = pd.DataFrame({'Date': date_labels, 'Investment_Amount_(3-Week_SMA)': hist_invcap})
 save_to_csv(investments_capabilities,"historical_data/hist_inv_cap.csv")
 
-investments_safety = pd.DataFrame({'Date': date_labels, 'Investment_Amount_(3-Week_SMA)': invsaf})
+investments_safety = pd.DataFrame({'Date': date_labels, 'Investment_Amount_(3-Week_SMA)': hist_invsaf})
 save_to_csv(investments_safety,"historical_data/hist_inv_saf.csv")

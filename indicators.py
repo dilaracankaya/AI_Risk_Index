@@ -28,7 +28,9 @@ num_mondays = sum(1 for day in calendar.monthcalendar(year, month) if day[calend
 weekly_tweet_topull = monthly_tweet_topull / num_mondays
 weekly_psa_topull = weekly_rsa_topull = weekly_tweet_topull/2
 
-date_dmy = datetime.today().strftime('%d%m%y')
+# date_dmy = datetime.today().strftime('%d%m%y')
+date_dmy = "010824"
+
 
 # REGULATORY SENTIMENT ANALYSIS
 query_rsa = "AI (regulation OR regulations OR regulatory OR policy OR policies OR framework OR frameworks OR government OR governance OR legislation OR laws OR compliance OR oversight OR standards OR ethics OR ethical OR guidelines OR safety OR audit OR accountability OR transparency OR risk OR management OR assessment OR cooperation OR treaty OR treaties) -is:retweet lang:en -decentralized -DAO -crypto -cryptocurrency -cryptocurrencies -#crypto -#cryptocurrency -L2 -#L2 -#Layer2"
