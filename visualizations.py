@@ -51,10 +51,9 @@ def commit_to_github(file_paths, branch_name="gh-pages", remote_name="origin"):
 
         # Add and commit only the HTML files
         for file_path in file_paths:
-            if file_path.endswith(".html"):
-                subprocess.run(["git", "add", file_path], check=True)
-                commit_message = f"Add file: {os.path.basename(file_path)}"
-                subprocess.run(["git", "commit", "-m", commit_message], check=True)
+            subprocess.run(["git", "add", file_path], check=True)
+            commit_message = f"Add file: {os.path.basename(file_path)}"
+            subprocess.run(["git", "commit", "-m", commit_message], check=True)
 
         # Push the branch to remote
         subprocess.run(["git", "push", "-u", remote_name, branch_name], check=True)
@@ -135,11 +134,11 @@ def main():
                           (hist_psa, "hist_psa"),
                           (hist_airi, "hist_airi")]
 
-    html_paths = []
+    file_paths = []
     for data, filename in data_and_filenames:
         html_path = create_his_graph(data, filename)
         if html_path:
-            html_paths.append(html_path)
+            file_paths.append(html_path)
 
     # Create gauge chart
     def deg_to_rad(deg):
@@ -216,13 +215,13 @@ def main():
         if cropped_web_path:
             html_path = create_html(cropped_web_path, "gauge_web", img_type="x", new_width=450, new_height=360)
             if html_path:
-                html_paths.append(html_path)
+                file_paths.append(html_path)
 
         cropped_mobile_path = erase_bg_and_crop(gauge_file_path, 0.35)
         if cropped_mobile_path:
             html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="x", new_width=300, new_height=240)
             if html_path:
-                html_paths.append(html_path)
+                file_paths.append(html_path)
 
     except Exception as e:
         print(f"Error processing images: {e}")
@@ -274,9 +273,16 @@ def main():
         draw.text((bg_width - text_width - right_margin, bg_height - 45), footer_right, fill="darkgrey",
                   font=font_footer)
 
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
+            gauge_x_path = temp_file.name
+            gauge_x.save(gauge_file_path)
+
         # Save the final image
-        gauge_x_path = "gauge_x.png"
-        gauge_x.save(gauge_x_path)
+        # gauge_x_path = "gauge_x.png"
+        # #gauge_x.save(gauge_x_path)
+
+        if gauge_x_path:
+            file_paths.append(gauge_x_path)
 
         # html_x_path = create_html(gauge_x_path, "gauge_x", img_type="x", new_width=new_width, new_height=new_height)
         # if html_x_path:
@@ -285,7 +291,7 @@ def main():
     except Exception as e:
         print(f"Error creating X image: {e}")
 
-    commit_to_github(html_paths, branch_name="gh-pages")
+    commit_to_github(file_paths, branch_name="gh-pages")
 
     os.remove(gauge_file_path)
     os.remove(cropped_web_path)
