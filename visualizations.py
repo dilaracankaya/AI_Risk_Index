@@ -233,7 +233,7 @@ def main():
 
     # Create image for X post
     try:
-        background = Image.open('background1.png')
+        background = Image.open('/Users/Dilara/Documents/Coding/AI_Risk_Index/background1.png')
         gauge_cropped = Image.open(cropped_web_path)  # This assumes the image exists
 
         # Resize background
