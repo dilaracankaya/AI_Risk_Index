@@ -1,6 +1,5 @@
 import os
 import numpy as np
-import pandas as pd
 import base64
 import tempfile
 import subprocess
@@ -126,9 +125,6 @@ def erase_bg_and_crop(input_image, resize_factor):
 
 
 def main():
-    from indicators import airi_score  # Import here for debugging
-    print(f"Imported airi_score in main: {airi_score}")
-
     # Switch to the gh-pages branch at the beginning
     subprocess.run(["git", "checkout", "gh-pages"], check=True)
 
@@ -232,62 +228,136 @@ def main():
         print(f"Error processing images: {e}")
 
     # Create image for X post
-    try:
-        background = Image.open('/Users/Dilara/Documents/Coding/AI_Risk_Index/background1.png')
-        gauge_cropped = Image.open(cropped_web_path)  # This assumes the image exists
+    # try:
+    #     background = Image.open('background.png')
+    #     gauge_cropped = Image.open(cropped_web_path)  # This assumes the image exists
+    #
+    #     # Resize background
+    #     new_width = int(gauge_cropped.width * 1.2)
+    #     new_height = new_width  # Ensure background is square
+    #     gauge_x = background.resize((new_width, new_height), Image.LANCZOS)
+    #
+    #     # Center the gauge_cropped on the background and lower it a bit
+    #     bg_width, bg_height = gauge_x.size
+    #     gauge_width, gauge_height = gauge_cropped.size
+    #     x_center = (bg_width - gauge_width) // 2
+    #     y_center = (bg_height - gauge_height) // 2 + 48  # Lower the gauge by 48 pixels
+    #     gauge_x.paste(gauge_cropped, (x_center, y_center), gauge_cropped)
+    #
+    #     # Draw text on the image
+    #     draw = ImageDraw.Draw(gauge_x)
+    #     font_path = "/Library/Fonts/Helvetica.ttc"  # Make sure this path is correct
+    #     font_title = ImageFont.truetype(font_path, 50)  # For title text
+    #     font_subtitle = ImageFont.truetype(font_path, 30)  # For subtitle text
+    #     font_footer = ImageFont.truetype(font_path, 20)
+    #     title = "AI Risk Index"
+    #     subtitle = "Quantifying misaligned AI risk"
+    #     footer_left = "22 Jul 2024"
+    #     footer_right = "airiskindex.com"
+    #
+    #     # Margins
+    #     left_margin = 30
+    #     right_margin = 30
+    #
+    #     # Draw the title
+    #     draw.text((left_margin, 40), title, fill="black", font=font_title)
+    #     # Draw the subtitle
+    #     draw.text((left_margin, 95), subtitle, fill="#6b6b6b", font=font_subtitle)
+    #     # Draw the divider line
+    #     line_y = bg_height - 55
+    #     draw.line([(left_margin, line_y), (bg_width - right_margin, line_y)], fill="darkgrey", width=2)
+    #     # Draw the footer left
+    #     draw.text((left_margin, bg_height - 45), footer_left, fill="darkgrey", font=font_footer)
+    #     # Draw the footer right
+    #     bbox = draw.textbbox((0, 0), footer_right, font=font_footer)
+    #     text_width = bbox[2] - bbox[0]
+    #     draw.text((bg_width - text_width - right_margin, bg_height - 45), footer_right, fill="darkgrey",
+    #               font=font_footer)
+    #
+    #     # Save the final image
+    #     gauge_x_path = "gauge_x.png"
+    #     gauge_x.save(gauge_x_path)
+    #
+    #     # html_x_path = create_html(gauge_x_path, "gauge_x", img_type="x", new_width=new_width, new_height=new_height)
+    #     # if html_x_path:
+    #     #     html_paths.append(html_x_path)
+    #
+    # except Exception as e:
+    #     print(f"Error creating X image: {e}")
+    from PIL import Image, ImageDraw, ImageFont
 
-        # Resize background
+    background_path = 'background.png'
+    cropped_web_path = 'path_to_cropped_image.png'  # Replace with actual path
+
+    # Try opening the background image
+    try:
+        background = Image.open(background_path)
+        print("Background image opened successfully.")
+    except Exception as e:
+        print(f"Error opening background image: {e}")
+
+    # Try opening the cropped image
+    try:
+        gauge_cropped = Image.open(cropped_web_path)
+        print("Cropped image opened successfully.")
+    except Exception as e:
+        print(f"Error opening cropped image: {e}")
+
+    # Try resizing the background image
+    try:
         new_width = int(gauge_cropped.width * 1.2)
         new_height = new_width  # Ensure background is square
         gauge_x = background.resize((new_width, new_height), Image.LANCZOS)
+        print("Background image resized successfully.")
+    except Exception as e:
+        print(f"Error resizing background image: {e}")
 
-        # Center the gauge_cropped on the background and lower it a bit
+    # Try pasting the cropped image onto the background
+    try:
         bg_width, bg_height = gauge_x.size
         gauge_width, gauge_height = gauge_cropped.size
         x_center = (bg_width - gauge_width) // 2
         y_center = (bg_height - gauge_height) // 2 + 48  # Lower the gauge by 48 pixels
         gauge_x.paste(gauge_cropped, (x_center, y_center), gauge_cropped)
+        print("Cropped image pasted successfully.")
+    except Exception as e:
+        print(f"Error pasting cropped image: {e}")
 
-        # Draw text on the image
+    # Try drawing text on the image
+    try:
         draw = ImageDraw.Draw(gauge_x)
         font_path = "/Library/Fonts/Helvetica.ttc"  # Make sure this path is correct
-        font_title = ImageFont.truetype(font_path, 50)  # For title text
-        font_subtitle = ImageFont.truetype(font_path, 30)  # For subtitle text
+        font_title = ImageFont.truetype(font_path, 50)
+        font_subtitle = ImageFont.truetype(font_path, 30)
         font_footer = ImageFont.truetype(font_path, 20)
         title = "AI Risk Index"
         subtitle = "Quantifying misaligned AI risk"
         footer_left = "22 Jul 2024"
         footer_right = "airiskindex.com"
 
-        # Margins
         left_margin = 30
         right_margin = 30
 
-        # Draw the title
         draw.text((left_margin, 40), title, fill="black", font=font_title)
-        # Draw the subtitle
         draw.text((left_margin, 95), subtitle, fill="#6b6b6b", font=font_subtitle)
-        # Draw the divider line
         line_y = bg_height - 55
         draw.line([(left_margin, line_y), (bg_width - right_margin, line_y)], fill="darkgrey", width=2)
-        # Draw the footer left
         draw.text((left_margin, bg_height - 45), footer_left, fill="darkgrey", font=font_footer)
-        # Draw the footer right
         bbox = draw.textbbox((0, 0), footer_right, font=font_footer)
         text_width = bbox[2] - bbox[0]
         draw.text((bg_width - text_width - right_margin, bg_height - 45), footer_right, fill="darkgrey",
                   font=font_footer)
+        print("Text drawn successfully.")
+    except Exception as e:
+        print(f"Error drawing text on image: {e}")
 
-        # Save the final image
+    # Try saving the final image
+    try:
         gauge_x_path = "gauge_x.png"
         gauge_x.save(gauge_x_path)
-
-        # html_x_path = create_html(gauge_x_path, "gauge_x", img_type="x", new_width=new_width, new_height=new_height)
-        # if html_x_path:
-        #     html_paths.append(html_x_path)
-
+        print(f"Image saved as {gauge_x_path}.")
     except Exception as e:
-        print(f"Error creating X image: {e}")
+        print(f"Error saving image: {e}")
 
     commit_to_github(html_paths, branch_name="gh-pages")
 
