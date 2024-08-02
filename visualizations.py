@@ -277,7 +277,11 @@ def main():
         gauge_x_path = "gauge_x.png"
         gauge_x.save(gauge_x_path)
         file_paths.append(gauge_x_path)
-        commit_to_github(gauge_x_path, branch_name="gh-pages")
+        try:
+            commit_to_github(gauge_x_path, branch_name="gh-pages")
+        except Exception as e:
+            print(f"Error committing gauge_x.png: {e}")
+
 
         # with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
         #     gauge_x_path = temp_file.name
