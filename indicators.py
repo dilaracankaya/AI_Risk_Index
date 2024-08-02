@@ -57,7 +57,7 @@ recalculate_reclassification(tweets_df_rsa)
 
 # Final score of RSA
 hist_rsa = [40.12, 42.15, 43.67, 44.88, 46.20, 47.35, 48.58, 49.12, 49.87, 50.24, 50.67, 51.22, 50.89]
-final_rsa = tweets_df_rsa["Stance_weighted_0to100"].mean().round(2)
+final_rsa = round(tweets_df_rsa["Stance_weighted_0to100"].mean(), 2)
 hist_rsa.append(final_rsa)
 
 
@@ -86,7 +86,7 @@ recalculate_reclassification(tweets_df_psa)
 
 # Final score of PSA
 hist_psa = [62.34, 63.56, 65.12, 66.78, 67.89, 68.45, 68.90, 69.12, 69.45, 69.78, 70.12, 70.50, 70.77]
-final_psa = tweets_df_psa["Stance_weighted_0to100"].mean().round(2)
+final_psa = round(tweets_df_psa["Stance_weighted_0to100"].mean(), 2)
 hist_psa.append(final_psa)
 
 
