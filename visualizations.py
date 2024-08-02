@@ -283,6 +283,10 @@ def main():
     def deg_to_rad(deg):
         return deg * np.pi / 180
 
+    values = [100, 80, 60, 40, 20, 0]
+    x_axis_deg = [0, 36, 72, 108, 144]
+    x_axis_vals = [deg_to_rad(i) for i in x_axis_deg]
+
     # Log output for debugging
     for i, v in enumerate(values):
         print(f"Checking index {i}: v = {v}, v - 20 = {v - 20}, condition = {v >= airi_score > (v - 20)}")
