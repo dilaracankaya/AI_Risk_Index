@@ -116,6 +116,9 @@ def erase_bg_and_crop(input_image, resize_factor):
 
 
 def main():
+    from indicators import airi_score  # Import here for debugging
+    print(f"Imported airi_score in main: {airi_score}")
+
     # Switch to the gh-pages branch at the beginning
     subprocess.run(["git", "checkout", "gh-pages"], check=True)
 
