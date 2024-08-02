@@ -229,7 +229,7 @@ def main():
     # Create image for X post
     try:
         background = Image.open('background.png')
-        gauge_cropped = Image.open(cropped_web_path)  # This assumes the image exists
+        gauge_cropped = Image.open(cropped_web_path)
 
         # Resize background
         new_width = int(gauge_cropped.width * 1.2)
@@ -245,16 +245,15 @@ def main():
 
         # Draw text on the image
         draw = ImageDraw.Draw(gauge_x)
-        font_path = "/Library/Fonts/Helvetica.ttc"  # Make sure this path is correct
-        font_title = ImageFont.truetype(font_path, 50)  # For title text
-        font_subtitle = ImageFont.truetype(font_path, 30)  # For subtitle text
+        font_path = "/Library/Fonts/Helvetica.ttc"
+        font_title = ImageFont.truetype(font_path, 50)
+        font_subtitle = ImageFont.truetype(font_path, 30)
         font_footer = ImageFont.truetype(font_path, 20)
         title = "AI Risk Index"
         subtitle = "Quantifying misaligned AI risk"
         footer_left = "22 Jul 2024"
         footer_right = "airiskindex.com"
 
-        # Margins
         left_margin = 30
         right_margin = 30
 
@@ -275,7 +274,7 @@ def main():
 
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
             gauge_x_path = temp_file.name
-            gauge_x.save(gauge_file_path)
+            gauge_x.save(gauge_x_path)
 
         # Save the final image
         # gauge_x_path = "gauge_x.png"
@@ -296,6 +295,8 @@ def main():
     os.remove(gauge_file_path)
     os.remove(cropped_web_path)
     os.remove(cropped_mobile_path)
+    os.remove(gauge_x_path)
+
 
     # Switch back to the main branch
     subprocess.run(["git", "checkout", "main"], check=True)
