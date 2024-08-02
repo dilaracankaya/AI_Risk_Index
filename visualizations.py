@@ -15,7 +15,7 @@ from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa,
 
 # Debugging print to check airi_score after import
 print(f"Imported airi_score: {airi_score}")
-
+print(debug)
 def create_html(png_path, output_filename, img_type="web", new_width=None, new_height=None):
     try:
         with open(png_path, "rb") as image_file:
