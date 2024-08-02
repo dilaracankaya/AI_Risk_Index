@@ -272,10 +272,18 @@ def main():
         draw.text((bg_width - text_width - right_margin, bg_height - 45), footer_right, fill="darkgrey",
                   font=font_footer)
 
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
+            gauge_x_path = temp_file.name
+            gauge_x.save(gauge_x_path)
+            print(f"Gauge X image saved at {gauge_x_path}")
+
+        if gauge_x_path:
+            file_paths.append(gauge_x_path)
+
         # Save the final image
-        gauge_x_path = "gauge_x.png"
-        gauge_x.save(gauge_x_path)
-        file_paths.append(gauge_x_path)
+        # gauge_x_path = "gauge_x.png"
+        # gauge_x.save(gauge_x_path)
+        # file_paths.append(gauge_x_path)
 
         # Save the final image
         # gauge_x_path = "gauge_x.png"
