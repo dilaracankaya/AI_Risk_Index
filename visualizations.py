@@ -145,7 +145,7 @@ def main():
 
     highlighted_edgecolor = "#6b6b6b"
     default_edgecolor = "#D3D3DA"
-    highlight_index = next(i for i, v in enumerate(values) if v > airi_score > (v - 20))
+    highlight_index = next(i for i, v in enumerate(values) if v >= airi_score > (v - 20))
 
     num_bars = 5
     bar_width = deg_to_rad(180 / num_bars) * 0.95
