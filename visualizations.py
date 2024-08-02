@@ -51,12 +51,14 @@ def commit_to_github(file_paths, branch_name="gh-pages", remote_name="origin"):
 
         # Add and commit only the HTML files
         for file_path in file_paths:
-            subprocess.run(["git", "add", file_path], check=True)
-            commit_message = f"Add file: {os.path.basename(file_path)}"
-            subprocess.run(["git", "commit", "-m", commit_message], check=True)
+            if file_path.endswith(".html") or file_path.endswith(".png"):
+                subprocess.run(["git", "add", file_path], check=True)
+                commit_message = f"Add file: {os.path.basename(file_path)}"
+                subprocess.run(["git", "commit", "-m", commit_message], check=True)
 
         # Push the branch to remote
         subprocess.run(["git", "push", "-u", remote_name, branch_name], check=True)
+        print(f"Number of files to be committed: {len(file_paths)}")
         print(f"Files committed to branch: {branch_name}")
 
     except subprocess.CalledProcessError as e:
