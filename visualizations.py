@@ -242,7 +242,7 @@ def main():
         bg_width, bg_height = gauge_x.size
         gauge_width, gauge_height = gauge_cropped.size
         x_center = (bg_width - gauge_width) // 2
-        y_center = (bg_height - gauge_height) // 2 + 200  # Lower the gauge by 48 pixels
+        y_center = (bg_height - gauge_height) // 2 + 500  # Lower the gauge by 48 pixels
         gauge_x.paste(gauge_cropped, (x_center, y_center), gauge_cropped)
 
         # Draw text on the image
