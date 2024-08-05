@@ -57,7 +57,7 @@ def commit_to_github(file_paths, branch_name="gh-pages", remote_name="origin"):
                 subprocess.run(["git", "commit", "-m", commit_message], check=True)
 
         # Push the branch to remote
-        subprocess.run(["git", "push", "-u", remote_name, branch_name], check=True)
+        # subprocess.run(["git", "push", "-u", remote_name, branch_name], check=True)
         print(f"Number of files to be committed: {len(file_paths)}")
         print(f"Files committed to branch: {branch_name}")
 
