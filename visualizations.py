@@ -57,7 +57,7 @@ def commit_to_github(file_paths, branch_name="gh-pages", remote_name="origin"):
                 subprocess.run(["git", "commit", "-m", commit_message], check=True)
 
         # Push the branch to remote
-        # subprocess.run(["git", "push", "-u", remote_name, branch_name], check=True)
+        subprocess.run(["git", "push", "-u", remote_name, branch_name], check=True)
         print(f"Number of files to be committed: {len(file_paths)}")
         print(f"Files committed to branch: {branch_name}")
 
@@ -242,7 +242,7 @@ def main():
         bg_width, bg_height = gauge_x.size
         gauge_width, gauge_height = gauge_cropped.size
         x_center = (bg_width - gauge_width) // 2
-        y_center = (bg_height - gauge_height) // 2 + 48  # Lower the gauge by 48 pixels
+        y_center = (bg_height - gauge_height) // 2 + 80  # Lower the gauge by 48 pixels
         gauge_x.paste(gauge_cropped, (x_center, y_center), gauge_cropped)
 
         # Draw text on the image
