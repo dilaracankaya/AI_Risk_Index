@@ -159,7 +159,7 @@ def main():
     highlighted_edgecolor = "#6b6b6b"
     default_edgecolor = "#D3D3DA"
 
-    print(f"Imported airi_score 2: {airi_score}")
+    print(f"\nImported airi_score 2: {airi_score}")
 
     for i, v in enumerate(values):
         print(f"Checking index {i}: v = {v}, v - 20 = {v - 20}, condition = {v >= airi_score > (v - 20)}")
@@ -170,7 +170,7 @@ def main():
         print("No valid highlight index found.")
         return  # Exit the function if no valid index is found
 
-    print(f"Highlight index found: {highlight_index}")
+    print(f"Highlight index found: {highlight_index}\n")
 
     num_bars = 5
     bar_width = deg_to_rad(180 / num_bars) * 0.95
@@ -233,9 +233,8 @@ def main():
     try:
         background = Image.open('background.png')
         if cropped_web_path:
-            gauge_cropped = Image.open(cropped_web_path)
-        else:
-            print("Error: cropped_web_path is not defined.")
+            print(f"\n cropped_web_path exists.")
+        gauge_cropped = Image.open(cropped_web_path)
 
         # Resize background
         new_width = int(gauge_cropped.width * 1.2)
