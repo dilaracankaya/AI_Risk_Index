@@ -236,8 +236,8 @@ regulatory_policy_terms = [
     'AI oversight', 'international cooperation', 'AI treaty']
 
 # DATE TO SAVE DATASETS
-# date_dmy = datetime.today().strftime('%d%m%y')
-date_dmy = "010824"
+date_dmy = datetime.today().strftime('%d%m%y')
+#date_dmy = "010824"
 
 today = datetime.today()
 if today.weekday() == 0:  # Monday is 0
@@ -299,6 +299,7 @@ else:
     tweets_df_psa.head()
 
 process_df("psa", tweets_df_psa).head()
+tweets_df_psa["Stance_weighted_0to100"] = tweets_df_psa["Stance_weighted_0to100"].round(2)
 tweets_df_psa["Stance_weighted_0to100"].describe().T
 
 # Manual tweaks specific to this dataset
@@ -318,8 +319,14 @@ final_psa = round(tweets_df_psa["Stance_weighted_0to100"].mean(), 2)
 
 # INVESTMENTS
 # TODO these will be deleted
-hist_rsa = [40.12, 42.15, 43.67, 44.88, 46.20, 47.35, 48.58, 49.12, 49.87, 50.24, 50.67, 51.22, 50.89, 59.12]
-hist_psa = [62.34, 63.56, 65.12, 66.78, 67.89, 68.45, 68.90, 69.12, 69.45, 69.78, 70.12, 70.50, 70.77, 59.27]
+# hist_rsa scores deleted from the beginning to make lengths of rsa/psa lists equal to lengths of inv lists (14): 40.12
+# hist_rsa of week of aug 19: 63.01
+
+# hist_psa scores deleted from the beginning to make lengths of rsa/psa lists equal to lengths of inv lists (14): 62.34
+# hist_psa of week of aug 19: 61.48
+
+hist_rsa = [42.15, 43.67, 44.88, 46.20, 47.35, 48.58, 49.12, 49.87, 50.24, 50.67, 51.22, 50.89, 59.12, 59.35]
+hist_psa = [63.56, 65.12, 66.78, 67.89, 68.45, 68.90, 69.12, 69.45, 69.78, 70.12, 70.50, 70.77, 59.27, 60.00]
 final_rsa = hist_rsa[-1]
 final_psa = hist_psa[-1]
 
