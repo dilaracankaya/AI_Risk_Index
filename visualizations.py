@@ -238,6 +238,7 @@ def main():
         if gauge_cropped:
             print(f"\ngauge_cropped exists.\n")
 
+
         # Resize background
         new_width = int(gauge_cropped.width * 1.2)
         new_height = new_width  # Ensure background is square
@@ -245,12 +246,15 @@ def main():
         if gauge_x:
             print(f"\ngauge_x exists.\n")
 
+
         # Center the gauge_cropped on the background and lower it a bit
         bg_width, bg_height = gauge_x.size
         gauge_width, gauge_height = gauge_cropped.size
         x_center = (bg_width - gauge_width) // 2
         y_center = (bg_height - gauge_height) // 2 + 500  # Lower the gauge by 48 pixels
         gauge_x.paste(gauge_cropped, (x_center, y_center), gauge_cropped)
+        gauge_x_path_intermediate = "gauge_x_intermediate.png"
+        gauge_x.save(gauge_x_path_intermediate)
 
         # Draw text on the image
         draw = ImageDraw.Draw(gauge_x)
@@ -260,7 +264,7 @@ def main():
         font_footer = ImageFont.truetype(font_path, 20)
         title = "AI Risk Index"
         subtitle = "Quantifying misaligned AI risk"
-        footer_left = "22 Jul 2024"
+        footer_left = "29 Jul 2024"
         footer_right = "airiskindex.com"
 
         left_margin = 30
