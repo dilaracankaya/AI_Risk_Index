@@ -233,13 +233,17 @@ def main():
     try:
         background = Image.open('background.png')
         if cropped_web_path:
-            print(f"\n cropped_web_path exists.")
+            print(f"\ncropped_web_path exists.\n")
         gauge_cropped = Image.open(cropped_web_path)
+        if gauge_cropped:
+            print(f"\ngauge_cropped exists.\n")
 
         # Resize background
         new_width = int(gauge_cropped.width * 1.2)
         new_height = new_width  # Ensure background is square
         gauge_x = background.resize((new_width, new_height), Image.LANCZOS)
+        if gauge_x:
+            print(f"\ngauge_x exists.\n")
 
         # Center the gauge_cropped on the background and lower it a bit
         bg_width, bg_height = gauge_x.size
