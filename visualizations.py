@@ -100,6 +100,7 @@ def erase_bg_and_crop(input_image, resize_factor):
             coords = np.argwhere(mask)
             if coords.size == 0:
                 raise ValueError("No non-white areas detected in the image.")
+                return None
 
             top, left = coords.min(axis=0)
             bottom, right = coords.max(axis=0)
@@ -231,7 +232,10 @@ def main():
     # Create image for X post
     try:
         background = Image.open('background.png')
-        gauge_cropped = Image.open(cropped_web_path)
+        if cropped_web_path:
+            gauge_cropped = Image.open(cropped_web_path)
+        else:
+            print("Error: cropped_web_path is not defined.")
 
         # Resize background
         new_width = int(gauge_cropped.width * 1.2)
