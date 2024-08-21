@@ -2,6 +2,7 @@ import os
 import numpy as np
 import base64
 import tempfile
+from io import BytesIO
 import subprocess
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
@@ -12,37 +13,68 @@ filterwarnings('ignore')
 
 from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi
 
+x_post_date = "19 Aug 2024"
 
-def create_html(png_path, output_filename, img_type="web", new_width=None, new_height=None):
-    try:
-        with open(png_path, "rb") as image_file:
-            img_str = base64.b64encode(image_file.read()).decode("utf-8")
-    except Exception as e:
-        print(f"Error reading image file: {e}")
-        return
+def create_html(input_data, output_filename, img_type="web", new_width=None, new_height=None):
+    """
+        Creates an HTML file embedding a base64 encoded image, either from a PNG file or a Matplotlib plot.
 
-    img_attrs = ''
-    if img_type == "x":
-        if new_width and new_height:
-            img_attrs = f'width="{new_width}" height="{new_height}"'
-        else:
-            print("Invalid parameters for image type 'x'. Please provide new_width and new_height.")
-            return
+    Args:
+        input_data (str or plt.Figure): The file path to the PNG image or a Matplotlib Figure object.
+        output_filename (str): The desired name for the output HTML file (without extension).
+        img_type (str, optional): The type of image to embed. Defaults to "web".
+                                  If "x", new_width and new_height must be provided.
+        new_width (int, optional): The new width for the image when img_type is "x". Defaults to None.
+        new_height (int, optional): The new height for the image when img_type is "x". Defaults to None.
 
-    html_content = f"""
-    <html>
-    <body>
-        <img src="data:image/png;base64,{img_str}" {img_attrs}>
-    </body>
-    </html>
+    Returns:
+        str: The path to the created HTML file. Returns None if an error occurs during file creation.
+
+    Raises:
+        Exception: If there are issues reading the PNG file or writing the HTML file.
     """
 
-    html_path = f"{output_filename}.html"
-    with open(html_path, 'w') as f:
-        f.write(html_content)
-    print(f"HTML file created at {html_path}")
+    try:
+        if isinstance(input_data, str):
+            # Handle the case where input_data is a file path
+            with open(input_data, "rb") as image_file:
+                img_str = base64.b64encode(image_file.read()).decode("utf-8")
+        elif isinstance(input_data, plt.Figure):
+            # Handle the case where input_data is a Matplotlib Figure
+            buffer = BytesIO()
+            input_data.savefig(buffer, format='png', bbox_inches='tight', transparent=True)
+            buffer.seek(0)
+            img_str = base64.b64encode(buffer.read()).decode("utf-8")
+        else:
+            print("Invalid input_data type. Must be a file path or a Matplotlib Figure.")
+            return None
 
-    return html_path
+        img_attrs = ''
+        if img_type == "x":
+            if new_width and new_height:
+                img_attrs = f'width="{new_width}" height="{new_height}"'
+            else:
+                print("Invalid parameters for image type 'x'. Please provide new_width and new_height.")
+                return
+
+        html_content = f"""
+        <html>
+        <body>
+            <img src="data:image/png;base64,{img_str}" {img_attrs}>
+        </body>
+        </html>
+        """
+
+        html_path = f"{output_filename}.html"
+        with open(html_path, 'w') as f:
+            f.write(html_content)
+        print(f"HTML file created at {html_path}")
+
+        return html_path
+
+    except Exception as e:
+        print(f"Error creating HTML file: {e}")
+        return None
 
 
 def commit_to_github(file_paths, branch_name="gh-pages", remote_name="origin"):
@@ -144,6 +176,7 @@ def main():
             file_paths.append(html_path)
 
     # Create gauge chart
+    print("\n------CREATE GAUGE GRAPH------")
     def deg_to_rad(deg):
         return deg * np.pi / 180
 
@@ -159,18 +192,18 @@ def main():
     highlighted_edgecolor = "#6b6b6b"
     default_edgecolor = "#D3D3DA"
 
-    print(f"\nImported airi_score 2: {airi_score}")
-
-    for i, v in enumerate(values):
-        print(f"Checking index {i}: v = {v}, v - 20 = {v - 20}, condition = {v >= airi_score > (v - 20)}")
+    print(f"airi_score: {airi_score}")
+#   for i, v in enumerate(values):
+#       print(f"Checking index {i}: v = {v}, v - 20 = {v - 20}, condition = {v >= airi_score > (v - 20)}")
 
     highlight_index = next((i for i, v in enumerate(values) if v >= airi_score > (v - 20)), None)
-
+    if highlight_index is not None:
+        highlight_val = values[highlight_index]
     if highlight_index is None:
         print("No valid highlight index found.")
         return  # Exit the function if no valid index is found
 
-    print(f"Highlight index found: {highlight_index}\n")
+    print(f"Highlighted range for airi_score: ({highlight_val-20}-{highlight_val}) \n")
 
     num_bars = 5
     bar_width = deg_to_rad(180 / num_bars) * 0.95
@@ -189,7 +222,7 @@ def main():
 
     for i, (text, x, y, rot) in enumerate(annotations):
         color = "black" if i == highlight_index else highlighted_edgecolor
-        plt.annotate(text, xy=(deg_to_rad(x), y), rotation=rot, fontweight="bold", fontsize=16, color=color,
+        plt.annotate(text, xy=(deg_to_rad(x), y), rotation=rot, fontweight="bold", fontsize=22, color=color,
                      rotation_mode='anchor', transform=ax.transData, ha="center")
 
     ticks = [100, "•", 80, "•", 60, "•", 40, "•", 20, "•", 0]
@@ -197,115 +230,113 @@ def main():
             zip([deg_to_rad(i) for i in [0, 18, 36, 54, 72, 90, 108, 126, 144, 162, 180]], ticks)):
         color = highlighted_edgecolor
         ha = "right" if i <= 4 else ("center" if i == 5 else "left")
-        plt.annotate(val, xy=(loc, 1.3), ha=ha, fontsize="16", color=color)
+        plt.annotate(val, xy=(loc, 1.3), ha=ha, va="center", fontsize="20", color=color)
 
     plt.annotate(round(airi_score), xytext=(0, 0), xy=(deg_to_rad((100 - round(airi_score)) / 100 * 180), 1.8),
-                 fontsize=45, color="#FFFCF8", ha="center", va="center",
-                 arrowprops=dict(arrowstyle="wedge, tail_width=0.5", color="black"),
-                 bbox=dict(boxstyle="circle, pad=0.4", facecolor="black", linewidth=0.3))
+                  fontsize=55, color="#FFFCF8", va="center", ha="center",
+                  arrowprops=dict(arrowstyle="wedge, tail_width=0.5", color="black"),
+                  bbox=dict(boxstyle="circle, pad=0.4", facecolor="black", linewidth=0.3))
 
-    plt.tight_layout(pad=0)
-    plt.axis('off')
+    # Set theta limits to crop out bottom half
+    ax.set_thetalim(0, np.pi)
+    ax.set_axis_off()
+    plt.tight_layout()
 
-    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
-        gauge_file_path = temp_file.name
-        plt.savefig(gauge_file_path, dpi=100, bbox_inches='tight', pad_inches=0, transparent=True)
-    plt.close()
+    # plt.savefig("raw_gauge.png", dpi=200, bbox_inches='tight', pad_inches=0, transparent=True)
 
     # Create HTML gauge chart for desktop and mobile
+    print("\n------HTML GAUGE MAIN------")
+    # TODO doing it this way below gets rid of the resizing in erase_bg_and_crop and so idk if the mobile size will look good.
+    try:
+        html_path_gauge_raw = create_html(fig, "gauge_web")
+        if html_path_gauge_raw:
+            file_paths.append(html_path_gauge_raw)
+    except Exception as e:
+        print(f"Error creating HTML files: {e}")
+
+    """
     try:
         cropped_web_path = erase_bg_and_crop(gauge_file_path, 0.55)
         if cropped_web_path:
-            html_path = create_html(cropped_web_path, "gauge_web", img_type="x", new_width=450, new_height=360)
+            html_path = create_html(cropped_web_path, "gauge_web", img_type="web")#, new_width=450, new_height=360)
             if html_path:
                 file_paths.append(html_path)
 
         cropped_mobile_path = erase_bg_and_crop(gauge_file_path, 0.35)
         if cropped_mobile_path:
-            html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="x", new_width=300, new_height=240)
+            html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="web", new_width=300, new_height=240)
             if html_path:
                 file_paths.append(html_path)
 
     except Exception as e:
         print(f"Error processing images: {e}")
+    """
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
+        gauge_raw_temp_file_path = temp_file.name
+        plt.savefig(gauge_raw_temp_file_path, dpi=200, bbox_inches='tight', pad_inches=0, transparent=True)
 
-    # Create image for X post
+    plt.close()
+
+#    Create image for X post
+    print("\n------X IMAGE------")
     try:
         background = Image.open('background.png')
-        if cropped_web_path:
-            print(f"\ncropped_web_path exists.\n")
-        gauge_cropped = Image.open(cropped_web_path)
-        if gauge_cropped:
-            print(f"\ngauge_cropped exists.\n")
-
+        gauge_raw = Image.open(gauge_raw_temp_file_path)
 
         # Resize background
-        new_width = int(gauge_cropped.width * 1.2)
+        new_width = int(gauge_raw.width * 1.19)
         new_height = new_width  # Ensure background is square
         gauge_x = background.resize((new_width, new_height), Image.LANCZOS)
-        if gauge_x:
-            print(f"\ngauge_x exists.\n")
-
 
         # Center the gauge_cropped on the background and lower it a bit
         bg_width, bg_height = gauge_x.size
-        gauge_width, gauge_height = gauge_cropped.size
+        gauge_width, gauge_height = gauge_raw.size
         x_center = (bg_width - gauge_width) // 2
-        y_center = (bg_height - gauge_height) // 2 + 500  # Lower the gauge by 48 pixels
-        gauge_x.paste(gauge_cropped, (x_center, y_center), gauge_cropped)
+        y_center = (bg_height - gauge_height) // 2 + 95  # Lower the gauge by 95 pixels
+        gauge_x.paste(gauge_raw, (x_center, y_center), gauge_raw)
         gauge_x_path_intermediate = "gauge_x_intermediate.png"
         gauge_x.save(gauge_x_path_intermediate)
 
         # Draw text on the image
         draw = ImageDraw.Draw(gauge_x)
         font_path = "/Library/Fonts/Helvetica.ttc"
-        font_title = ImageFont.truetype(font_path, 50)
-        font_subtitle = ImageFont.truetype(font_path, 30)
-        font_footer = ImageFont.truetype(font_path, 20)
+        font_title = ImageFont.truetype(font_path, 230)
+        font_subtitle = ImageFont.truetype(font_path, 140)
+        font_footer = ImageFont.truetype(font_path, 95)
         title = "AI Risk Index"
         subtitle = "Quantifying misaligned AI risk"
-        footer_left = "29 Jul 2024"
+        footer_left = x_post_date
         footer_right = "airiskindex.com"
 
-        left_margin = 30
-        right_margin = 30
+        left_margin = 140
+        right_margin = 140
 
-        # Draw the title
-        draw.text((left_margin, 40), title, fill="black", font=font_title)
-        # Draw the subtitle
-        draw.text((left_margin, 95), subtitle, fill="#6b6b6b", font=font_subtitle)
-        # Draw the divider line
-        line_y = bg_height - 55
-        draw.line([(left_margin, line_y), (bg_width - right_margin, line_y)], fill="darkgrey", width=2)
-        # Draw the footer left
-        draw.text((left_margin, bg_height - 45), footer_left, fill="darkgrey", font=font_footer)
-        # Draw the footer right
+        # Draw title
+        draw.text((left_margin, 180), title, fill="black", font=font_title)
+        # Draw subtitle
+        draw.text((left_margin, 440), subtitle, fill="#6b6b6b", font=font_subtitle)
+        # Draw divider line
+        line_y = bg_height - 255
+        draw.line([(left_margin, line_y), (bg_width - right_margin, line_y)], fill="#6b6b6b", width=10)
+        # Draw footer left
+        draw.text((left_margin, bg_height - 210), footer_left, fill="#6b6b6b", font=font_footer)
+        # Draw footer right
         bbox = draw.textbbox((0, 0), footer_right, font=font_footer)
         text_width = bbox[2] - bbox[0]
-        draw.text((bg_width - text_width - right_margin, bg_height - 45), footer_right, fill="darkgrey",
+        draw.text((bg_width - text_width - right_margin, bg_height - 210), footer_right, fill="#6b6b6b",
                   font=font_footer)
 
         gauge_x_path = "gauge_x.png"
         gauge_x.save(gauge_x_path)
         file_paths.append(gauge_x_path)
-        try:
-            commit_to_github(gauge_x_path, branch_name="gh-pages")
-        except Exception as e:
-            print(f"Error committing gauge_x.png: {e}")
 
+    except Exception as e:
+        print(f"Error creating X image: {e}")
 
-        # with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
-        #     gauge_x_path = temp_file.name
-        #     gauge_x.save(gauge_x_path)
-        #     file_paths.append(gauge_x_path)
-        #     print(f"Gauge X image saved at {gauge_x_path}")
-        # print(len(file_paths))
+    print(f"Length of file_paths list: {len(file_paths)}")
 
-        # Save the final image
-        # gauge_x_path = "gauge_x.png"
-        # gauge_x.save(gauge_x_path)
-        # file_paths.append(gauge_x_path)
-
+    """
+        # TODO do i need this image in html form for twitter bot?
         # Save the final image
         # gauge_x_path = "gauge_x.png"
         # #gauge_x.save(gauge_x_path)
@@ -315,17 +346,18 @@ def main():
 
     except Exception as e:
         print(f"Error creating X image: {e}")
-
+    
+    """
     commit_to_github(file_paths, branch_name="gh-pages")
 
-    os.remove(gauge_file_path)
-    os.remove(cropped_web_path)
-    os.remove(cropped_mobile_path)
+    #os.remove(gauge_file_path)
+    #os.remove(cropped_web_path)
+    #os.remove(cropped_mobile_path)
+    os.remove(html_path_gauge_raw)
     os.remove(gauge_x_path)
 
     # Switch back to the main branch
     subprocess.run(["git", "checkout", "main"], check=True)
-
 
 if __name__ == "__main__":
     main()
