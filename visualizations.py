@@ -132,7 +132,6 @@ def erase_bg_and_crop(input_image, resize_factor):
             coords = np.argwhere(mask)
             if coords.size == 0:
                 raise ValueError("No non-white areas detected in the image.")
-                return None
 
             top, left = coords.min(axis=0)
             bottom, right = coords.max(axis=0)
