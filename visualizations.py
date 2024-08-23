@@ -256,13 +256,13 @@ def main():
     try:
         cropped_web_path = erase_bg_and_crop(gauge_raw_temp_file_path, 0.55)
         if cropped_web_path:
-            html_path = create_html(cropped_web_path, "gauge_web", img_type="web")#, new_width=450, new_height=360)
+            html_path = create_html(cropped_web_path, "gauge_web", img_type="web", new_width=450, new_height=360)
             if html_path:
                 file_paths.append(html_path)
 
         cropped_mobile_path = erase_bg_and_crop(gauge_raw_temp_file_path, 0.35)
         if cropped_mobile_path:
-            html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="web")#, new_width=300, new_height=240)
+            html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="web", new_width=300, new_height=240)
             if html_path:
                 file_paths.append(html_path)
 
@@ -359,11 +359,10 @@ def main():
     """
     commit_to_github(file_paths, branch_name="gh-pages")
 
-    #os.remove(gauge_file_path)
-    #os.remove(cropped_web_path)
-    #os.remove(cropped_mobile_path)
-    os.remove(html_path_gauge_raw)
-    os.remove(html_path_gauge_mobile)
+    os.remove(gauge_raw_temp_file_path)
+    os.remove(cropped_web_path)
+    os.remove(cropped_mobile_path)
+    os.remove(html_path)
     os.remove(gauge_x_path)
 
     # Switch back to the main branch
