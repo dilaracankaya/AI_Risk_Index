@@ -383,6 +383,7 @@ def main():
     
     """
     git_add_all()
+    push_to_origin('gh-pages', 'origin')
     commit_to_github(file_paths, branch_name="gh-pages")
     push_to_origin('gh-pages', 'origin')
 
