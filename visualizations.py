@@ -15,7 +15,7 @@ from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa,
 
 x_post_date = "19 Aug 2024"
 
-def create_html(input_data, output_filename, resize_factor=1.0, img_type="web"):
+def create_html(input_data, output_filename, img_type="web", new_width=None, new_height=None):
     """
         Creates an HTML file embedding a base64 encoded image, either from a PNG file or a Matplotlib plot.
 
@@ -24,7 +24,8 @@ def create_html(input_data, output_filename, resize_factor=1.0, img_type="web"):
         output_filename (str): The desired name for the output HTML file (without extension).
         img_type (str, optional): The type of image to embed. Defaults to "web".
                                   If "x", new_width and new_height must be provided.
-        resize_factor (int, optional): Multiplier to resize the height and width of input image. Defaults to 1.
+        new_width (int, optional): The new width for the image when img_type is "x". Defaults to None.
+        new_height (int, optional): The new height for the image when img_type is "x". Defaults to None.
 
     Returns:
         str: The path to the created HTML file. Returns None if an error occurs during file creation.
@@ -38,41 +39,22 @@ def create_html(input_data, output_filename, resize_factor=1.0, img_type="web"):
             # Handle the case where input_data is a file path
             with open(input_data, "rb") as image_file:
                 img_str = base64.b64encode(image_file.read()).decode("utf-8")
-            # For file input, we can't determine the size, so we'll use 100% width
-            width, height = "100%", "auto"
         elif isinstance(input_data, plt.Figure):
             # Handle the case where input_data is a Matplotlib Figure
-            fig = input_data
-            # Get the current size of the figure in inches
-            fig_size = fig.get_size_inches()
-            # Calculate new size based on resize factor
-            new_width = fig_size[0] * resize_factor
-            new_height = fig_size[1] * resize_factor
-            # Set the new size
-            fig.set_size_inches(new_width, new_height)
-
-            # Save to buffer
             buffer = BytesIO()
             input_data.savefig(buffer, format='png', bbox_inches='tight', transparent=True)
             buffer.seek(0)
             img_str = base64.b64encode(buffer.read()).decode("utf-8")
-            # Set width and height for HTML
-            width, height = f"{new_width * 100:.0f}px", f"{new_height * 100:.0f}px"
         else:
             print("Invalid input_data type. Must be a file path or a Matplotlib Figure.")
             return None
-
-        plot = plt.figure(figsize=(10, 10), dpi=100)
-        # Retrieve the original width and height of the figure in pixels
-        original_width, original_height = plot.get_size_inches() * plot.dpi
-        new_width, new_height = int(original_width * resize_factor), int(original_height * resize_factor)
 
         img_attrs = ''
         if img_type == "x":
             if new_width and new_height:
                 img_attrs = f'width="{new_width}" height="{new_height}"'
             else:
-                print("Invalid parameters for image. Please provide new_width and new_height.")
+                print("Invalid parameters for image type 'x'. Please provide new_width and new_height.")
                 return
 
         html_content = f"""
@@ -260,12 +242,35 @@ def main():
     ax.set_axis_off()
     plt.tight_layout()
 
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
+        gauge_raw_temp_file_path = temp_file.name
+        plt.savefig(gauge_raw_temp_file_path, dpi=200, bbox_inches='tight', pad_inches=0, transparent=True)
+
+    plt.close()
+
     # plt.savefig("raw_gauge.png", dpi=200, bbox_inches='tight', pad_inches=0, transparent=True)
 
     # Create HTML gauge chart for desktop and mobile
     print("\n------HTML GAUGE MAIN------")
     # TODO doing it this way below gets rid of the resizing in erase_bg_and_crop and so idk if the mobile size will look good.
     try:
+        cropped_web_path = erase_bg_and_crop(gauge_raw_temp_file_path, 0.55)
+        if cropped_web_path:
+            html_path = create_html(cropped_web_path, "gauge_web", img_type="web")#, new_width=450, new_height=360)
+            if html_path:
+                file_paths.append(html_path)
+
+        cropped_mobile_path = erase_bg_and_crop(gauge_raw_temp_file_path, 0.35)
+        if cropped_mobile_path:
+            html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="web")#, new_width=300, new_height=240)
+            if html_path:
+                file_paths.append(html_path)
+
+    except Exception as e:
+        print(f"Error processing images: {e}")
+
+    """
+        try:
         html_path_gauge_raw = create_html(fig, "gauge_web", 0.55)
         html_path_gauge_mobile = create_html(fig, "gauge_mobile", 0.35)
         if html_path_gauge_raw:
@@ -274,29 +279,7 @@ def main():
             file_paths.append(html_path_gauge_mobile)
     except Exception as e:
         print(f"Error creating HTML files: {e}")
-
     """
-    try:
-        cropped_web_path = erase_bg_and_crop(gauge_file_path, 0.55)
-        if cropped_web_path:
-            html_path = create_html(cropped_web_path, "gauge_web", img_type="web")#, new_width=450, new_height=360)
-            if html_path:
-                file_paths.append(html_path)
-
-        cropped_mobile_path = erase_bg_and_crop(gauge_file_path, 0.35)
-        if cropped_mobile_path:
-            html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="web", new_width=300, new_height=240)
-            if html_path:
-                file_paths.append(html_path)
-
-    except Exception as e:
-        print(f"Error processing images: {e}")
-    """
-    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
-        gauge_raw_temp_file_path = temp_file.name
-        plt.savefig(gauge_raw_temp_file_path, dpi=200, bbox_inches='tight', pad_inches=0, transparent=True)
-
-    plt.close()
 
 #    Create image for X post
     print("\n------X IMAGE------")
