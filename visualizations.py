@@ -97,6 +97,33 @@ def commit_to_github(file_paths, branch_name="gh-pages", remote_name="origin"):
         print(f"An error occurred: {e}")
 
 
+def git_add_all():
+    try:
+        result = subprocess.run(
+            ["git", "add", "."],
+            check=True,
+            text=True,
+            capture_output=True)
+        print("Output:", result.stdout)
+        print("All changes staged successfully.")
+    except subprocess.CalledProcessError as e:
+        print("Error staging changes:", e.stderr)
+
+
+def push_to_origin(branch_name='gh-pages', remote_name='origin'):
+    try:
+        # Run the git push command
+        result = subprocess.run(
+            ["git", "push", "-u", remote_name, branch_name],
+            check=True,
+            text=True,
+            capture_output=True)
+        print("Output:", result.stdout)
+        print("Pushed successfully to", remote_name, branch_name)
+    except subprocess.CalledProcessError as e:
+        print("Error pushing to remote:", e.stderr)
+
+
 def create_his_graph(y_values, filename):
     try:
         end_date = datetime.today()
@@ -355,7 +382,9 @@ def main():
         print(f"Error creating X image: {e}")
     
     """
+    git_add_all()
     commit_to_github(file_paths, branch_name="gh-pages")
+    push_to_origin('gh-pages', 'origin')
 
     os.remove(gauge_raw_temp_file_path)
     os.remove(cropped_web_path)
