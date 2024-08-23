@@ -24,8 +24,7 @@ def create_html(input_data, output_filename, resize_factor=1.0, img_type="web"):
         output_filename (str): The desired name for the output HTML file (without extension).
         img_type (str, optional): The type of image to embed. Defaults to "web".
                                   If "x", new_width and new_height must be provided.
-        new_width (int, optional): The new width for the image when img_type is "x". Defaults to None.
-        new_height (int, optional): The new height for the image when img_type is "x". Defaults to None.
+        resize_factor (int, optional): Multiplier to resize the height and width of input image. Defaults to 1.
 
     Returns:
         str: The path to the created HTML file. Returns None if an error occurs during file creation.
@@ -168,7 +167,7 @@ def erase_bg_and_crop(input_image, resize_factor):
             new_bottom = min(img.height, int(center_y + square_size / 2))
 
             cropped_gauge = img.crop((new_left, new_top, new_right, new_bottom))
-            cropped_gauge.width * resize_factor), int(cropped_gauge.height * resize_factor
+            new_size = int(cropped_gauge.width * resize_factor), int(cropped_gauge.height * resize_factor)
 
             with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
                 output_path = temp_file.name
@@ -386,6 +385,7 @@ def main():
     #os.remove(cropped_web_path)
     #os.remove(cropped_mobile_path)
     os.remove(html_path_gauge_raw)
+    os.remove(html_path_gauge_mobile)
     os.remove(gauge_x_path)
 
     # Switch back to the main branch
