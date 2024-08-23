@@ -237,8 +237,8 @@ regulatory_policy_terms = [
     'AI oversight', 'international cooperation', 'AI treaty']
 
 # DATE TO SAVE DATASETS
-date_dmy = datetime.today().strftime('%d%m%y')
-date_dmy = "210824"
+date_dmy = datetime.today().strftime('%y%m%d')
+date_dmy = "240821"
 
 today = datetime.today()
 if today.weekday() == 0:  # Monday is 0
