@@ -365,7 +365,7 @@ def main():
     os.remove(gauge_x_path)
 
     # Switch back to the main branch
-    subprocess.run(["git", "checkout", "main"], check=True)
+    # subprocess.run(["git", "checkout", "main"], check=True)
 
 if __name__ == "__main__":
     main()
