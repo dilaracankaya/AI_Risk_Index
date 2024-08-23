@@ -15,7 +15,6 @@ pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 500)
 pd.set_option('display.max_colwidth', None)
 pd.set_option('display.float_format', lambda x: '%.2f' % x)
-# ! "If a search request does not specify a start_time, end_time, or since_id request parameter, the end_time will default to "now" (actually 30 seconds before the time of query) and the start_time will default to seven days ago."
 
 load_dotenv("credentials.env")
 
@@ -34,6 +33,8 @@ client = tweepy.Client(
 
 
 # FUNCTIONS
+
+# ! "If a search request does not specify a start_time, end_time, or since_id request parameter, the end_time will default to "now" (actually 30 seconds before the time of query) and the start_time will default to seven days ago."
 def fetch_tweets(query, count=100):
     tweet_list = []
     next_token = None
@@ -237,7 +238,7 @@ regulatory_policy_terms = [
 
 # DATE TO SAVE DATASETS
 date_dmy = datetime.today().strftime('%d%m%y')
-#date_dmy = "010824"
+date_dmy = "210824"
 
 today = datetime.today()
 if today.weekday() == 0:  # Monday is 0
@@ -325,14 +326,16 @@ final_psa = round(tweets_df_psa["Stance_weighted_0to100"].mean(), 2)
 # hist_psa scores deleted from the beginning to make lengths of rsa/psa lists equal to lengths of inv lists (14): 62.34
 # hist_psa of week of aug 19: 61.48
 
-hist_rsa = [42.15, 43.67, 44.88, 46.20, 47.35, 48.58, 49.12, 49.87, 50.24, 50.67, 51.22, 50.89, 59.12, 59.35]
-hist_psa = [63.56, 65.12, 66.78, 67.89, 68.45, 68.90, 69.12, 69.45, 69.78, 70.12, 70.50, 70.77, 59.27, 60.00]
+hist_rsa = [42.15, 43.67, 44.88, 46.20, 47.35, 48.58, 49.12, 49.87, 50.24, 50.67, 51.22, 50.89, 59.12, 59.35, 62.44]
+hist_psa = [63.56, 65.12, 66.78, 67.89, 68.45, 68.90, 69.12, 69.45, 69.78, 70.12, 70.50, 70.77, 59.27, 60.00, 60.09]
+len(hist_rsa)
 final_rsa = hist_rsa[-1]
 final_psa = hist_psa[-1]
 
 # TODO should these also use update_csv_and_list? Because unless saved into a csv, the data and date calculated separately may fall out of sync.
-hist_invcap = [95.39, 95.35, 97.02, 97.71, 97.67, 97.03, 95.93, 96.04, 96.03, 94.96, 94.84, 94.01, 95.29, 94.44]
-hist_invsaf = [17.47, 18.69, 19.58, 24.13, 19.44, 14.70, 15.79, 11.08, 11.55, 11.57, 21.16, 30.41, 30.76, 26.54]
+hist_invcap = [97.02, 97.71, 97.67, 97.03, 95.93, 96.04, 96.03, 94.96, 94.84, 94.01, 95.29, 95.19, 94.80, 94.18, 94.24]
+hist_invsaf = [19.58, 24.13, 19.44, 14.70, 15.79, 11.08, 11.55, 11.57, 21.16, 30.41, 30.76, 19.82, 21.57, 22.72, 32.46]
+len(hist_invcap)
 final_invcap = hist_invcap[-1]
 final_invsaf = hist_invsaf[-1]
 
