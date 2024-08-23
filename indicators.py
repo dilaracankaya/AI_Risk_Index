@@ -264,12 +264,13 @@ weekly_psa_topull = weekly_rsa_topull = weekly_tweet_topull/2
 query_rsa = "AI (regulation OR regulations OR regulatory OR policy OR policies OR framework OR frameworks OR government OR governance OR legislation OR laws OR compliance OR oversight OR standards OR ethics OR ethical OR guidelines OR safety OR audit OR accountability OR transparency OR risk OR management OR assessment OR cooperation OR treaty OR treaties) -is:retweet lang:en -decentralized -DAO -crypto -cryptocurrency -cryptocurrencies -#crypto -#cryptocurrency -L2 -#L2 -#Layer2"
 file_path = f"fetched_tweets/tweets_rsa_{date_dmy}.csv"
 
-if not os.path.exists(file_path):
-    tweets_df_rsa = fetch_tweets(query_rsa, count=weekly_rsa_topull)
-    save_to_csv(tweets_df_rsa, file_path)
-else:
+if os.path.exists(file_path):
     tweets_df_rsa = pd.read_csv(file_path)
     tweets_df_rsa.head()
+else:
+    tweets_df_rsa = fetch_tweets(query_rsa, count=weekly_rsa_topull)
+    save_to_csv(tweets_df_rsa, file_path)
+
 
 process_df("rsa", tweets_df_rsa).head()
 tweets_df_rsa["Stance_weighted_0to100"] = tweets_df_rsa["Stance_weighted_0to100"].round(2)
