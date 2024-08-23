@@ -15,7 +15,7 @@ from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa,
 
 x_post_date = "19 Aug 2024"
 
-def create_html(input_data, output_filename, img_type="web", new_width=None, new_height=None):
+def create_html(input_data, output_filename, resize_factor=1.0, img_type="web"):
     """
         Creates an HTML file embedding a base64 encoded image, either from a PNG file or a Matplotlib plot.
 
@@ -39,28 +39,51 @@ def create_html(input_data, output_filename, img_type="web", new_width=None, new
             # Handle the case where input_data is a file path
             with open(input_data, "rb") as image_file:
                 img_str = base64.b64encode(image_file.read()).decode("utf-8")
+            # For file input, we can't determine the size, so we'll use 100% width
+            width, height = "100%", "auto"
         elif isinstance(input_data, plt.Figure):
             # Handle the case where input_data is a Matplotlib Figure
+            fig = input_data
+            # Get the current size of the figure in inches
+            fig_size = fig.get_size_inches()
+            # Calculate new size based on resize factor
+            new_width = fig_size[0] * resize_factor
+            new_height = fig_size[1] * resize_factor
+            # Set the new size
+            fig.set_size_inches(new_width, new_height)
+
+            # Save to buffer
             buffer = BytesIO()
             input_data.savefig(buffer, format='png', bbox_inches='tight', transparent=True)
             buffer.seek(0)
             img_str = base64.b64encode(buffer.read()).decode("utf-8")
+            # Set width and height for HTML
+            width, height = f"{new_width * 100:.0f}px", f"{new_height * 100:.0f}px"
         else:
             print("Invalid input_data type. Must be a file path or a Matplotlib Figure.")
             return None
 
-        img_attrs = ''
-        if img_type == "x":
-            if new_width and new_height:
-                img_attrs = f'width="{new_width}" height="{new_height}"'
-            else:
-                print("Invalid parameters for image type 'x'. Please provide new_width and new_height.")
-                return
+        # img_attrs = ''
+        # if img_type == "x":
+        #     if new_width and new_height:
+        #         img_attrs = f'width="{new_width}" height="{new_height}"'
+        #     else:
+        #         print("Invalid parameters for image type 'x'. Please provide new_width and new_height.")
+        #         return
 
         html_content = f"""
         <html>
+        <head>
+            <style>
+                img {{
+                    width: {width};
+                    height: {height};
+                    object-fit: contain;
+                }}
+            </style>
+        </head>
         <body>
-            <img src="data:image/png;base64,{img_str}" {img_attrs}>
+            <img src="data:image/png;base64,{img_str}">
         </body>
         </html>
         """
@@ -90,8 +113,8 @@ def commit_to_github(file_paths, branch_name="gh-pages", remote_name="origin"):
 
         # Push the branch to remote
         subprocess.run(["git", "push", "-u", remote_name, branch_name], check=True)
-        print(f"Number of files to be committed: {len(file_paths)}")
-        print(f"Files committed to branch: {branch_name}")
+        print(f"\nNumber of files to be committed: {len(file_paths)}")
+        print(f"\nFiles committed to branch: {branch_name}")
 
     except subprocess.CalledProcessError as e:
         print(f"An error occurred: {e}")
@@ -145,7 +168,7 @@ def erase_bg_and_crop(input_image, resize_factor):
             new_bottom = min(img.height, int(center_y + square_size / 2))
 
             cropped_gauge = img.crop((new_left, new_top, new_right, new_bottom))
-            new_size = (int(cropped_gauge.width * resize_factor), int(cropped_gauge.height * resize_factor))
+            cropped_gauge.width * resize_factor), int(cropped_gauge.height * resize_factor
 
             with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
                 output_path = temp_file.name
@@ -203,7 +226,7 @@ def main():
         print("No valid highlight index found.")
         return  # Exit the function if no valid index is found
 
-    print(f"Highlighted range for airi_score: ({highlight_val-20}-{highlight_val}) \n")
+    print(f"Highlighted range for airi_score: ({highlight_val-20}-{highlight_val})")
 
     num_bars = 5
     bar_width = deg_to_rad(180 / num_bars) * 0.95
@@ -248,9 +271,12 @@ def main():
     print("\n------HTML GAUGE MAIN------")
     # TODO doing it this way below gets rid of the resizing in erase_bg_and_crop and so idk if the mobile size will look good.
     try:
-        html_path_gauge_raw = create_html(fig, "gauge_web")
+        html_path_gauge_raw = create_html(fig, "gauge_web", 0.55)
+        html_path_gauge_mobile = create_html(fig, "gauge_web", 0.35)
         if html_path_gauge_raw:
             file_paths.append(html_path_gauge_raw)
+        if html_path_gauge_mobile:
+            file_paths.append(html_path_gauge_mobile)
     except Exception as e:
         print(f"Error creating HTML files: {e}")
 
@@ -294,8 +320,6 @@ def main():
         x_center = (bg_width - gauge_width) // 2
         y_center = (bg_height - gauge_height) // 2 + 95  # Lower the gauge by 95 pixels
         gauge_x.paste(gauge_raw, (x_center, y_center), gauge_raw)
-        gauge_x_path_intermediate = "gauge_x_intermediate.png"
-        gauge_x.save(gauge_x_path_intermediate)
 
         # Draw text on the image
         draw = ImageDraw.Draw(gauge_x)
@@ -326,14 +350,22 @@ def main():
         draw.text((bg_width - text_width - right_margin, bg_height - 210), footer_right, fill="#6b6b6b",
                   font=font_footer)
 
-        gauge_x_path = "gauge_x.png"
+        stripped_x_post_date = x_post_date.replace(" ", "")
+        gauge_x_path = f"gauge_x_{stripped_x_post_date}.png"
         gauge_x.save(gauge_x_path)
         file_paths.append(gauge_x_path)
+        print(f"X image created at {gauge_x_path}")
 
     except Exception as e:
         print(f"Error creating X image: {e}")
 
-    print(f"Length of file_paths list: {len(file_paths)}")
+    print("\n------GIT COMMIT CHECK------")
+    print("8 files per update should be created.")
+    print("- Historical AIRI + 4 indicators = 5")
+    print("- Web + mobile gauge graphs = 2")
+    print("- X image = 1")
+
+    print(f"\nLength of file_paths list: {len(file_paths)}")
 
     """
         # TODO do i need this image in html form for twitter bot?
