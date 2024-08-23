@@ -252,15 +252,14 @@ def main():
 
     # Create HTML gauge chart for desktop and mobile
     print("\n------HTML GAUGE MAIN------")
-    # TODO doing it this way below gets rid of the resizing in erase_bg_and_crop and so idk if the mobile size will look good.
     try:
-        cropped_web_path = erase_bg_and_crop(gauge_raw_temp_file_path, 0.25)
+        cropped_web_path = erase_bg_and_crop(gauge_raw_temp_file_path, 0.22)
         if cropped_web_path:
             html_path = create_html(cropped_web_path, "gauge_web", img_type="web")#, new_width=450, new_height=360)
             if html_path:
                 file_paths.append(html_path)
 
-        cropped_mobile_path = erase_bg_and_crop(gauge_raw_temp_file_path, 0.15)
+        cropped_mobile_path = erase_bg_and_crop(gauge_raw_temp_file_path, 0.13)
         if cropped_mobile_path:
             html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="web")#, new_width=300, new_height=240)
             if html_path:
