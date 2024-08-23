@@ -62,27 +62,23 @@ def create_html(input_data, output_filename, resize_factor=1.0, img_type="web"):
             print("Invalid input_data type. Must be a file path or a Matplotlib Figure.")
             return None
 
-        # img_attrs = ''
-        # if img_type == "x":
-        #     if new_width and new_height:
-        #         img_attrs = f'width="{new_width}" height="{new_height}"'
-        #     else:
-        #         print("Invalid parameters for image type 'x'. Please provide new_width and new_height.")
-        #         return
+        plot = plt.figure(figsize=(10, 10), dpi=100)
+        # Retrieve the original width and height of the figure in pixels
+        original_width, original_height = plot.get_size_inches() * plot.dpi
+        new_width, new_height = int(original_width * resize_factor), int(original_height * resize_factor)
+
+        img_attrs = ''
+        if img_type == "x":
+            if new_width and new_height:
+                img_attrs = f'width="{new_width}" height="{new_height}"'
+            else:
+                print("Invalid parameters for image. Please provide new_width and new_height.")
+                return
 
         html_content = f"""
         <html>
-        <head>
-            <style>
-                img {{
-                    width: {width};
-                    height: {height};
-                    object-fit: contain;
-                }}
-            </style>
-        </head>
         <body>
-            <img src="data:image/png;base64,{img_str}">
+            <img src="data:image/png;base64,{img_str}" {img_attrs}>
         </body>
         </html>
         """
@@ -271,7 +267,7 @@ def main():
     # TODO doing it this way below gets rid of the resizing in erase_bg_and_crop and so idk if the mobile size will look good.
     try:
         html_path_gauge_raw = create_html(fig, "gauge_web", 0.55)
-        html_path_gauge_mobile = create_html(fig, "gauge_web", 0.35)
+        html_path_gauge_mobile = create_html(fig, "gauge_mobile", 0.35)
         if html_path_gauge_raw:
             file_paths.append(html_path_gauge_raw)
         if html_path_gauge_mobile:
@@ -359,12 +355,11 @@ def main():
         print(f"Error creating X image: {e}")
 
     print("\n------GIT COMMIT CHECK------")
-    print("8 files per update should be created.")
+    print("Files to be created per update:")
     print("- Historical AIRI + 4 indicators = 5")
     print("- Web + mobile gauge graphs = 2")
     print("- X image = 1")
-
-    print(f"\nLength of file_paths list: {len(file_paths)}")
+    print(f"\n{len(file_paths)}/8 files in the file_paths list.")
 
     """
         # TODO do i need this image in html form for twitter bot?
