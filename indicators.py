@@ -362,6 +362,13 @@ hist_psa = df_updated['psa_Indicator_Score'].tolist()
 hist_airi = df_updated['AIRI_Aggregate'].tolist()
 hist_date_records = df_updated['Date'].tolist()
 
+# Convert format of hist_date_records from 26/07/2024 to 26 Aug
+hist_date_records_formatted = []
+for date_str in hist_date_records:
+    date_obj = datetime.strptime(date_str, '%d/%m/%Y')  # Convert to datetime object
+    hist_date_records_formatted.append(date_obj.strftime('%b %d'))  # Format to 'DD Mon'
+
+
 """
 # hist_psa scores deleted from the beginning to make lengths of rsa/psa lists equal to lengths of inv lists (14): 62.34
 # hist_psa of week of aug 19: 61.48

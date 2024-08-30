@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 from warnings import filterwarnings
 filterwarnings('ignore')
 
-from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi, hist_date_records
+from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi, hist_date_records_formatted
 
 x_post_date = "26 Aug 2024"
 
@@ -126,7 +126,7 @@ def push_to_origin(branch_name='gh-pages', remote_name='origin'):
 
 def create_his_graph(y_values, filename):
     try:
-        fig = go.Figure(data=go.Scatter(x=hist_date_records, y=y_values, mode='lines', line=dict(color='blue')))
+        fig = go.Figure(data=go.Scatter(x=hist_date_records_formatted, y=y_values, mode='lines', line=dict(color='blue')))
         y_range = [min(y_values) - (max(y_values) - min(y_values)) * 0.1, max(y_values)]
         fig.update_layout(
             margin=dict(l=0, r=0, t=0, b=0),
@@ -192,13 +192,6 @@ def main():
                           (hist_rsa, "hist_rsa"),
                           (hist_psa, "hist_psa"),
                           (hist_airi, "hist_airi")]
-
-    # Convert format of hist_date_records from 26/07/2024 to 26 Aug
-    converted_dates = []
-    for date_str in hist_date_records:
-        date_obj = datetime.strptime(date_str, '%d/%m/%Y')  # Convert to datetime object
-        converted_dates.append(date_obj.strftime('%b %d'))  # Format to 'DD Mon'
-    hist_date_records = converted_dates
 
     file_paths = []
     for data, filename in data_and_filenames:
