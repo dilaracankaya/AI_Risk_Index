@@ -332,7 +332,7 @@ airi_score = round(0.25*(final_psa + final_rsa + final_invcap + final_invsaf), n
 
 
 # RECORD KEEPING
-score_records = pd.read_csv('all_scores.csv')
+score_records = pd.read_csv('historical_data/all_scores.csv')
 
 # Calculate the date of the Monday of the current week
 current_date = datetime.now()
@@ -348,7 +348,7 @@ new_row = {'Date': start_of_week.strftime('%d/%m/%Y'),
 
 score_records = score_records.append(new_row, ignore_index=True)
 
-output_file_path = f'all_scores_{date_dmy}.csv'
+output_file_path = f'historical_data/all_scores_{date_dmy}.csv'
 score_records.to_csv(output_file_path, index=False)
 
 # Read the updated CSV file
