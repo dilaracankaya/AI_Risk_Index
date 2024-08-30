@@ -181,7 +181,7 @@ def erase_bg_and_crop(input_image, resize_factor):
 
 def main():
     git_add_all()
-    push_to_origin('gh-pages', 'origin')
+    push_to_origin('main', 'origin')
 
     # Switch to the gh-pages branch at the beginning
     subprocess.run(["git", "checkout", "gh-pages"], check=True)
