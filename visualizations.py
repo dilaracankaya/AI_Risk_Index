@@ -389,16 +389,16 @@ def main():
     """
 
     # TODO bunların hepsine ihtiyacım var mı gerçekten?
-    git_add_all()
-    push_to_origin('gh-pages', 'origin')
-    commit_to_github(file_paths, branch_name="gh-pages")
-    push_to_origin('gh-pages', 'origin')
-
-    os.remove(gauge_raw_temp_file_path)
-    os.remove(cropped_web_path)
-    os.remove(cropped_mobile_path)
-    os.remove(html_path)
-    os.remove(gauge_x_path)
+    # git_add_all()
+    # push_to_origin('gh-pages', 'origin')
+    # commit_to_github(file_paths, branch_name="gh-pages")
+    # push_to_origin('gh-pages', 'origin')
+    #
+    # os.remove(gauge_raw_temp_file_path)
+    # os.remove(cropped_web_path)
+    # os.remove(cropped_mobile_path)
+    # os.remove(html_path)
+    # os.remove(gauge_x_path)
 
     # Switch back to the main branch
     # subprocess.run(["git", "checkout", "main"], check=True)
