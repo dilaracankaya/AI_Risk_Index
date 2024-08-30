@@ -193,6 +193,13 @@ def main():
                           (hist_psa, "hist_psa"),
                           (hist_airi, "hist_airi")]
 
+    # Convert format of hist_date_records from 26/07/2024 to 26 Aug
+    converted_dates = []
+    for date_str in hist_date_records:
+        date_obj = datetime.strptime(date_str, '%d/%m/%Y')  # Convert to datetime object
+        converted_dates.append(date_obj.strftime('%b %d'))  # Format to 'DD Mon'
+    hist_date_records = converted_dates
+
     file_paths = []
     for data, filename in data_and_filenames:
         html_path = create_his_graph(data, filename)
