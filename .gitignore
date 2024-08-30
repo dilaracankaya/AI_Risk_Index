@@ -3,7 +3,8 @@
 .DS_Store
 .vscode
 /credentials.env
-__pycache__
 workspace.xml
-.mp4
-ignore.py
+
+__pycache__
+historical_data/
+fetched_tweets/
