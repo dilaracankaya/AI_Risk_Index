@@ -277,6 +277,7 @@ else:
 
 
 process_df("rsa", tweets_df_rsa).head()
+save_to_csv(tweets_df_rsa, file_path)
 tweets_df_rsa["Stance_weighted_0to100"] = tweets_df_rsa["Stance_weighted_0to100"].round(2)
 tweets_df_rsa["Stance_weighted_0to100"].describe().T
 
