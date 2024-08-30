@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 from warnings import filterwarnings
 filterwarnings('ignore')
 
-from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi
+from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi, hist_date_records
 
 x_post_date = "19 Aug 2024"
 
@@ -126,12 +126,7 @@ def push_to_origin(branch_name='gh-pages', remote_name='origin'):
 
 def create_his_graph(y_values, filename):
     try:
-        end_date = datetime.today()
-        end_date -= timedelta(days=end_date.weekday() % 7)
-        dates = [end_date - timedelta(weeks=i) for i in range(len(y_values))]
-        date_labels = [date.strftime('%b %d') for date in reversed(dates)]
-
-        fig = go.Figure(data=go.Scatter(x=date_labels, y=y_values, mode='lines', line=dict(color='blue')))
+        fig = go.Figure(data=go.Scatter(x=hist_date_records, y=y_values, mode='lines', line=dict(color='blue')))
         y_range = [min(y_values) - (max(y_values) - min(y_values)) * 0.1, max(y_values)]
         fig.update_layout(
             margin=dict(l=0, r=0, t=0, b=0),
