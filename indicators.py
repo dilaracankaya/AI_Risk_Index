@@ -346,7 +346,7 @@ new_row = {'Date': start_of_week.strftime('%d/%m/%Y'),
            'psa_Indicator_Score': final_psa,
            'AIRI_Aggregate': airi_score}
 
-score_records = score_records.append(new_row, ignore_index=True)
+score_records = score_records._append(new_row, ignore_index=True)
 
 output_file_path = f'historical_data/all_scores_{date_dmy}.csv'
 score_records.to_csv(output_file_path, index=False)
