@@ -1,35 +1,11 @@
-import os
-import numpy as np
+import twint
 import pandas as pd
-import tweepy
-import csv
-import calendar
-from datetime import datetime, timedelta
-from dotenv import load_dotenv
-from nltk.corpus import stopwords
-from nltk.sentiment import SentimentIntensityAnalyzer
-from textblob import Word, TextBlob
-from warnings import filterwarnings
-filterwarnings('ignore')
-pd.set_option('display.max_columns', None)
-pd.set_option('display.width', 500)
-pd.set_option('display.max_colwidth', None)
-pd.set_option('display.float_format', lambda x: '%.2f' % x)
+from collections import Counter
 
-load_dotenv("credentials.env")
 
-api_key = os.getenv('api_key')
-api_key_secret = os.getenv('api_key_secret')
-access_token = os.getenv('access_token')
-access_token_secret = os.getenv('access_token_secret')
-bearer_token = os.getenv('bearer_token')
 
-client = tweepy.Client(
-    bearer_token=bearer_token,
-    consumer_key=api_key,
-    consumer_secret=api_key_secret,
-    access_token=access_token,
-    access_token_secret=access_token_secret)
+
+
 
 
 # FUNCTIONS
