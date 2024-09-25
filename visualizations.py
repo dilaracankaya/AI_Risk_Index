@@ -13,7 +13,8 @@ filterwarnings('ignore')
 
 from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi, hist_date_records_formatted
 
-x_post_date = "26 Aug 2024"
+x_post_date = "9 Sep 2024"
+
 
 def create_html(input_data, output_filename, img_type="web", new_width=None, new_height=None):
     """
@@ -179,6 +180,100 @@ def erase_bg_and_crop(input_image, resize_factor):
         return None
 
 
+def deg_to_rad(deg):
+    return deg * np.pi / 180
+
+
+def identify_highlight_index():
+    highlight_index = next((i for i, v in enumerate(values) if v >= airi_score > (v - 20)), None)
+
+    if highlight_index is not None:
+        highlight_val = values[highlight_index]
+    if highlight_index is None:
+        print("No valid highlight index found.")
+        return  # Exit the function if no valid index is found
+
+    print(f"Highlighted range for airi_score: ({highlight_val - 20}-{highlight_val})")
+
+    return highlight_index
+
+
+def create_gauge():
+    # Create the figure
+    fig = plt.figure(figsize=(10, 10), dpi=100)
+    fig.patch.set_alpha(0)
+    ax = fig.add_subplot(projection="polar")
+    ax.set_facecolor('none')
+
+    # TICKS
+    for i, (loc, val) in enumerate(zip([deg_to_rad(i) for i in [3, 19, 36, 54, 72, 90, 108, 126, 144, 161, 177]], ticks)):
+        color = highlighted_edgecolor
+        ha = "center" # "right" if i <= 4 else ("center" if i == 5 else "left")
+        plt.annotate(val, xy=(loc, 1.3), ha=ha, va="center", fontsize="20", color=color)
+
+    # NEEDLE
+    plt.annotate(round(airi_score), xytext=(0, 0), xy=(deg_to_rad((100 - round(airi_score)) / 100 * 180), 1.8),
+                 fontsize=55, color="#FFFCF8", va="center", ha="center",
+                 arrowprops=dict(arrowstyle="wedge, tail_width=0.5", color="black"),
+                 bbox=dict(boxstyle="circle, pad=0.4", facecolor="black", linewidth=0))
+
+    # BARS & EDGES
+    for i, (x, height) in enumerate(zip(x_axis_vals, values)):
+        edgecolor = highlighted_edgecolor if i == highlight_index else default_edgecolor
+        ax.bar(x=x + gap / 2, width=bar_width, height=1, bottom=1.5, linewidth=5, edgecolor=edgecolor, color="#FFFCF8",
+               align="edge")
+
+    # ADDITIONAL LINE
+    for i, (x, height) in enumerate(zip(x_axis_vals, values)):
+        edgecolor = negative_edgecolor if i == 0 or i == 4 else neutral_edgecolor if i == 1 or i == 3 else positive_edgecolor
+        ax.bar(x=x + gap / 2, width=bar_width, height=0.02, bottom=1.1, linewidth=4, edgecolor=edgecolor, align="edge")
+
+    # ANNOTATIONS
+    for i, (text, x, y, rot) in enumerate(annotations):
+        color = "black" if i == highlight_index else highlighted_edgecolor
+        plt.annotate(text, xy=(deg_to_rad(x), y), rotation=rot, fontweight="bold", fontsize=18, color=color,
+                     rotation_mode='anchor', transform=ax.transData, ha="center")
+
+    # Set theta limits to crop out bottom half
+    ax.set_thetalim(0, np.pi)
+    ax.set_axis_off()
+    plt.tight_layout()
+    return plt
+
+
+data_and_filenames = [(hist_invcap, "hist_invcap"),
+                      (hist_invsaf, "hist_invsaf"),
+                      (hist_rsa, "hist_rsa"),
+                      (hist_psa, "hist_psa"),
+                      (hist_airi, "hist_airi")]
+
+values = [100, 80, 60, 40, 20, 0]
+x_axis_deg = [0, 36, 72, 108, 144]
+x_axis_vals = [deg_to_rad(i) for i in x_axis_deg]
+
+highlight_index = next((i for i, v in enumerate(values) if v >= airi_score > (v - 20)), None)
+
+num_bars = 5
+bar_width = deg_to_rad(180 / num_bars) * 0.95
+gap = deg_to_rad(180 / num_bars) * 0.05
+
+ticks = [100, "•", 80, "•", 60, "•", 40, "•", 20, "•", 0]
+
+fillcolor = "#FFFCF8"
+highlighted_edgecolor = "#6b6b6b"  # default dark grey
+default_edgecolor = "#D3D3DA"  # default light grey
+
+positive_edgecolor = "#44c96d"  # vibrant green
+neutral_edgecolor = "#ffeb99"  # soft yellow
+negative_edgecolor = "#ff6b6b"  # warm coral
+
+annotations = [("Volatile", 18, 2.05, -75),
+               ("Unstable", 54, 2.05, -40),
+               ("Harmonized", 90, 2.05, 0),
+               ("Constrained", 126, 2.05, 40),
+               ("Stagnant", 162, 2.05, 75)]
+
+
 def main():
     git_add_all()
     push_to_origin('main', 'origin')
@@ -187,12 +282,6 @@ def main():
     subprocess.run(["git", "checkout", "gh-pages"], check=True)
 
     # Create historical line charts
-    data_and_filenames = [(hist_invcap, "hist_invcap"),
-                          (hist_invsaf, "hist_invsaf"),
-                          (hist_rsa, "hist_rsa"),
-                          (hist_psa, "hist_psa"),
-                          (hist_airi, "hist_airi")]
-
     file_paths = []
     for data, filename in data_and_filenames:
         html_path = create_his_graph(data, filename)
@@ -201,70 +290,9 @@ def main():
 
     # Create gauge chart
     print("\n------CREATE GAUGE GRAPH------")
-    def deg_to_rad(deg):
-        return deg * np.pi / 180
-
-    values = [100, 80, 60, 40, 20, 0]
-    x_axis_deg = [0, 36, 72, 108, 144]
-    x_axis_vals = [deg_to_rad(i) for i in x_axis_deg]
-
-    fig = plt.figure(figsize=(10, 10), dpi=100)
-    ax = fig.add_subplot(projection="polar")
-    fig.patch.set_alpha(0)
-    ax.set_facecolor('none')
-
-    highlighted_edgecolor = "#6b6b6b"
-    default_edgecolor = "#D3D3DA"
-
     print(f"airi_score: {airi_score}")
-#   for i, v in enumerate(values):
-#       print(f"Checking index {i}: v = {v}, v - 20 = {v - 20}, condition = {v >= airi_score > (v - 20)}")
 
-    highlight_index = next((i for i, v in enumerate(values) if v >= airi_score > (v - 20)), None)
-    if highlight_index is not None:
-        highlight_val = values[highlight_index]
-    if highlight_index is None:
-        print("No valid highlight index found.")
-        return  # Exit the function if no valid index is found
-
-    print(f"Highlighted range for airi_score: ({highlight_val-20}-{highlight_val})")
-
-    num_bars = 5
-    bar_width = deg_to_rad(180 / num_bars) * 0.95
-    gap = deg_to_rad(180 / num_bars) * 0.05
-
-    for i, (x, height) in enumerate(zip(x_axis_vals, values)):
-        edgecolor = highlighted_edgecolor if i == highlight_index else default_edgecolor
-        ax.bar(x=x + gap / 2, width=bar_width, height=1, bottom=1.5, linewidth=5, edgecolor=edgecolor, color="#FFFCF8",
-               align="edge")
-
-    annotations = [("High\nRisk", 18, 2.0, -75),
-                   ("Rising\nRisk", 54, 2.0, -40),
-                   ("Balanced\nEfforts", 90, 2.0, 0),
-                   ("Slowed\nAI Dev", 126, 2.0, 40),
-                   ("Blocked\nAI Dev", 162, 2.0, 75)]
-
-    for i, (text, x, y, rot) in enumerate(annotations):
-        color = "black" if i == highlight_index else highlighted_edgecolor
-        plt.annotate(text, xy=(deg_to_rad(x), y), rotation=rot, fontweight="bold", fontsize=22, color=color,
-                     rotation_mode='anchor', transform=ax.transData, ha="center")
-
-    ticks = [100, "•", 80, "•", 60, "•", 40, "•", 20, "•", 0]
-    for i, (loc, val) in enumerate(
-            zip([deg_to_rad(i) for i in [0, 18, 36, 54, 72, 90, 108, 126, 144, 162, 180]], ticks)):
-        color = highlighted_edgecolor
-        ha = "right" if i <= 4 else ("center" if i == 5 else "left")
-        plt.annotate(val, xy=(loc, 1.3), ha=ha, va="center", fontsize="20", color=color)
-
-    plt.annotate(round(airi_score), xytext=(0, 0), xy=(deg_to_rad((100 - round(airi_score)) / 100 * 180), 1.8),
-                  fontsize=55, color="#FFFCF8", va="center", ha="center",
-                  arrowprops=dict(arrowstyle="wedge, tail_width=0.5", color="black"),
-                  bbox=dict(boxstyle="circle, pad=0.4", facecolor="black", linewidth=0.3))
-
-    # Set theta limits to crop out bottom half
-    ax.set_thetalim(0, np.pi)
-    ax.set_axis_off()
-    plt.tight_layout()
+    plt = create_gauge()
 
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
         gauge_raw_temp_file_path = temp_file.name
@@ -279,13 +307,13 @@ def main():
     try:
         cropped_web_path = erase_bg_and_crop(gauge_raw_temp_file_path, 0.22)
         if cropped_web_path:
-            html_path = create_html(cropped_web_path, "gauge_web", img_type="web")#, new_width=450, new_height=360)
+            html_path = create_html(cropped_web_path, "gauge_web", img_type="web")  #, new_width=450, new_height=360)
             if html_path:
                 file_paths.append(html_path)
 
         cropped_mobile_path = erase_bg_and_crop(gauge_raw_temp_file_path, 0.13)
         if cropped_mobile_path:
-            html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="web")#, new_width=300, new_height=240)
+            html_path = create_html(cropped_mobile_path, "gauge_mobile", img_type="web")  #, new_width=300, new_height=240)
             if html_path:
                 file_paths.append(html_path)
 

@@ -7,10 +7,9 @@ import calendar
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
 from nltk.sentiment import SentimentIntensityAnalyzer
-from textblob import Word, TextBlob
-from warnings import filterwarnings
-filterwarnings('ignore')
+
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 500)
 pd.set_option('display.max_colwidth', None)
@@ -143,7 +142,9 @@ def process_df(analysis_type, dataframe):
 
     # Lemmatization
     # nltk.download('wordnet')
-    dataframe['Tweet'] = dataframe['Tweet'].apply(lambda x: " ".join([Word(word).lemmatize() for word in x.split()]))
+    lemmatizer = WordNetLemmatizer()
+    dataframe['Tweet'] = dataframe['Tweet'].apply(
+        lambda x: " ".join([lemmatizer.lemmatize(word) for word in x.split()]))
 
     # Sentiment Analysis
     sia = SentimentIntensityAnalyzer()
@@ -240,8 +241,8 @@ regulatory_policy_terms = [
     'AI oversight', 'international cooperation', 'AI treaty']
 
 # DATE TO SAVE DATASETS
-#date_dmy = datetime.today().strftime('%y%m%d')
-date_dmy = "240830"
+#date_ymd = datetime.today().strftime('%y%m%d')
+date_ymd = "240909"
 
 today = datetime.today()
 if today.weekday() == 0:  # Monday is 0
@@ -261,19 +262,19 @@ num_mondays = sum(1 for day in calendar.monthcalendar(year, month) if day[calend
 
 weekly_tweet_topull = monthly_tweet_topull / num_mondays
 # weekly_psa_topull = weekly_rsa_topull = weekly_tweet_topull/2
-weekly_psa_topull = weekly_rsa_topull = 1000
+weekly_psa_topull = weekly_rsa_topull = 4059
 
 
 # REGULATORY SENTIMENT ANALYSIS
 query_rsa = "-is:retweet AI (regulation OR regulations OR regulatory OR policy OR policies OR framework OR frameworks OR government OR governance OR legislation OR law OR laws OR compliance OR oversight OR standards OR ethics OR ethical OR guidelines OR safety OR audit OR accountability OR transparency OR risk OR management OR assessment OR cooperation OR treaty OR treaties) lang:en -decentralized -DAO -crypto -cryptocurrency -cryptocurrencies -#crypto -#cryptocurrency -L2 -#L2 -#Layer2"
-file_path = f"fetched_tweets/tweets_rsa_{date_dmy}.csv"
+file_path = f"fetched_tweets/tweets_rsa_{date_ymd}.csv"
 
 if os.path.exists(file_path):
     tweets_df_rsa = pd.read_csv(file_path)
     tweets_df_rsa.head()
-# else:
-#     tweets_df_rsa = fetch_tweets(query_rsa, count=weekly_rsa_topull)
-#     save_to_csv(tweets_df_rsa, file_path)
+else:
+    tweets_df_rsa = fetch_tweets(query_rsa, count=weekly_rsa_topull)
+    save_to_csv(tweets_df_rsa, file_path)
 
 
 process_df("rsa", tweets_df_rsa).head()
@@ -296,14 +297,14 @@ final_rsa = round(tweets_df_rsa["Stance_weighted_0to100"].mean(), 2)
 
 # PUBLIC SENTIMENT ANALYSIS
 query_psa = " -is:retweet AI (governance OR policy OR regulation OR capabilities) OR (#AIgovernance OR #AIpolicy) lang:en -decentralized -DAO -blockchain -#blockchain -blockchainassn -crypto -cryptocurrency -cryptocurrencies -#crypto -#cryptocurrency -L2 -#L2 -#Layer2"
-file_path = f"fetched_tweets/tweets_psa_{date_dmy}.csv"
+file_path = f"fetched_tweets/tweets_psa_{date_ymd}.csv"
 
 if os.path.exists(file_path):
     tweets_df_psa = pd.read_csv(file_path)
     tweets_df_psa.head()
-# else:
-#     tweets_df_psa = fetch_tweets(query_psa, count=weekly_psa_topull)
-#     save_to_csv(tweets_df_psa, file_path)
+else:
+    tweets_df_psa = fetch_tweets(query_psa, count=weekly_psa_topull)
+    save_to_csv(tweets_df_psa, file_path)
 
 process_df("psa", tweets_df_psa).head()
 tweets_df_psa["Stance_weighted_0to100"] = tweets_df_psa["Stance_weighted_0to100"].round(2)
@@ -323,8 +324,8 @@ final_psa = round(tweets_df_psa["Stance_weighted_0to100"].mean(), 2)
 
 
 # INVESTMENTS
-final_invcap = 91.99
-final_invsaf = 33.23
+final_invcap = 94.29  # TODO
+final_invsaf = 7.35  # TODO
 
 
 # FINAL TOTAL CALCULATION
@@ -340,7 +341,7 @@ current_date = datetime.now()
 start_of_week = current_date - timedelta(days=current_date.weekday())
 
 # Create a new row
-new_row = {'Date': start_of_week.strftime('%d/%m/%Y'),
+new_row = {'Date': datetime.strptime(date_ymd, '%y%m%d').strftime('%d/%m/%Y'), # TODO eskiden: start_of_week.strftime('%d/%m/%Y')
            'invcap_Indicator_Score': final_invcap,
            'invcsaf_Indicator_Score': final_invsaf,
            'rsa_Indicator_Score': final_rsa,
@@ -349,7 +350,7 @@ new_row = {'Date': start_of_week.strftime('%d/%m/%Y'),
 
 score_records = score_records._append(new_row, ignore_index=True)
 
-output_file_path = f'historical_data/all_scores_{date_dmy}.csv'
+output_file_path = f'historical_data/all_scores_{date_ymd}.csv'
 score_records.to_csv(output_file_path, index=False)
 
 # Read the updated CSV file
@@ -368,21 +369,3 @@ hist_date_records_formatted = []
 for date_str in hist_date_records:
     date_obj = datetime.strptime(date_str, '%d/%m/%Y')  # Convert to datetime object
     hist_date_records_formatted.append(date_obj.strftime('%b %d'))  # Format to 'DD Mon'
-
-
-"""
-# hist_psa scores deleted from the beginning to make lengths of rsa/psa lists equal to lengths of inv lists (14): 62.34
-# hist_psa of week of aug 19: 61.48
-hist_rsa = [42.15, 43.67, 44.88, 46.20, 47.35, 48.58, 49.12, 49.87, 50.24, 50.67, 51.22, 50.89, 59.12, 59.35, 62.44, 57.72]
-hist_psa = [63.56, 65.12, 66.78, 67.89, 68.45, 68.90, 69.12, 69.45, 69.78, 70.12, 70.50, 70.77, 59.27, 60.00, 60.09, 60.26]
-len(hist_rsa)
-final_rsa = hist_rsa[-1]
-final_psa = hist_psa[-1]
-
-# TODO should these also use update_csv_and_list? Because unless saved into a csv, the data and date calculated separately may fall out of sync.
-hist_invcap = [97.02, 97.71, 97.67, 97.03, 95.93, 96.04, 96.03, 94.96, 94.84, 94.01, 95.29, 95.19, 94.80, 94.18, 94.24]
-hist_invsaf = [19.58, 24.13, 19.44, 14.70, 15.79, 11.08, 11.55, 11.57, 21.16, 30.41, 30.76, 19.82, 21.57, 22.72, 32.46]
-len(hist_invcap)
-final_invcap = hist_invcap[-1]
-final_invsaf = hist_invsaf[-1]
-"""
