@@ -292,7 +292,7 @@ def main():
     print("\n------CREATE GAUGE GRAPH------")
     print(f"airi_score: {airi_score}")
 
-    plt = create_gauge()
+    create_gauge()
 
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
         gauge_raw_temp_file_path = temp_file.name
