@@ -242,7 +242,7 @@ regulatory_policy_terms = [
 
 # DATE TO SAVE DATASETS
 #date_ymd = datetime.today().strftime('%y%m%d')
-date_ymd = "240909"
+date_ymd = "241014"
 
 today = datetime.today()
 if today.weekday() == 0:  # Monday is 0
@@ -350,11 +350,12 @@ new_row = {'Date': datetime.strptime(date_ymd, '%y%m%d').strftime('%d/%m/%Y'), #
 
 score_records = score_records._append(new_row, ignore_index=True)
 
-output_file_path = f'historical_data/all_scores_{date_ymd}.csv'
-score_records.to_csv(output_file_path, index=False)
+score_records.to_csv('historical_data/all_scores.csv', index=False)
+score_records.to_csv(f'historical_data/all_scores_{date_ymd}.csv', index=False)
+
 
 # Read the updated CSV file
-df_updated = pd.read_csv(output_file_path)
+df_updated = pd.read_csv('historical_data/all_scores.csv')
 
 # Create lists from the respective columns
 hist_invcap = df_updated['invcap_Indicator_Score'].tolist()
