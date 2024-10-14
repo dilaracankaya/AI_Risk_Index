@@ -282,6 +282,7 @@ def main():
     subprocess.run(["git", "checkout", "gh-pages"], check=True)
 
     # Create historical line charts
+    print("\n------CREATE HISTORICAL GRAPHS------")
     file_paths = []
     for data, filename in data_and_filenames:
         html_path = create_his_graph(data, filename)

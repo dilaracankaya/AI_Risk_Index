@@ -338,18 +338,21 @@ score_records = pd.read_csv('historical_data/all_scores.csv')
 # Calculate the date of the Monday of the current week
 current_date = datetime.now()
 start_of_week = current_date - timedelta(days=current_date.weekday())
+new_date = datetime.strptime(date_ymd, '%y%m%d').strftime('%d/%m/%Y')  # TODO eskiden: start_of_week.strftime('%d/%m/%Y')
 
 # Create a new row
-new_row = {'Date': datetime.strptime(date_ymd, '%y%m%d').strftime('%d/%m/%Y'), # TODO eskiden: start_of_week.strftime('%d/%m/%Y')
+new_row = {'Date': new_date,
            'invcap_Indicator_Score': final_invcap,
            'invcsaf_Indicator_Score': final_invsaf,
            'rsa_Indicator_Score': final_rsa,
            'psa_Indicator_Score': final_psa,
            'AIRI_Aggregate': airi_score}
 
-score_records = score_records._append(new_row, ignore_index=True)
-
-score_records.to_csv('historical_data/all_scores.csv', index=False)
+if new_date not in score_records['Date'].values:
+    score_records = score_records._append(new_row, ignore_index=True)
+    score_records.to_csv('historical_data/all_scores.csv', index=False)
+else:
+    print(f"Record for {new_date} already exists.")
 
 # Read the updated CSV file
 df_updated = pd.read_csv('historical_data/all_scores.csv')
