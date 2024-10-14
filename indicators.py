@@ -262,8 +262,7 @@ num_mondays = sum(1 for day in calendar.monthcalendar(year, month) if day[calend
 
 weekly_tweet_topull = monthly_tweet_topull / num_mondays
 # weekly_psa_topull = weekly_rsa_topull = weekly_tweet_topull/2
-weekly_psa_topull = weekly_rsa_topull = 4059
-
+weekly_psa_topull = weekly_rsa_topull = int(10000/3/2)
 
 # REGULATORY SENTIMENT ANALYSIS
 query_rsa = "-is:retweet AI (regulation OR regulations OR regulatory OR policy OR policies OR framework OR frameworks OR government OR governance OR legislation OR law OR laws OR compliance OR oversight OR standards OR ethics OR ethical OR guidelines OR safety OR audit OR accountability OR transparency OR risk OR management OR assessment OR cooperation OR treaty OR treaties) lang:en -decentralized -DAO -crypto -cryptocurrency -cryptocurrencies -#crypto -#cryptocurrency -L2 -#L2 -#Layer2"
@@ -351,8 +350,6 @@ new_row = {'Date': datetime.strptime(date_ymd, '%y%m%d').strftime('%d/%m/%Y'), #
 score_records = score_records._append(new_row, ignore_index=True)
 
 score_records.to_csv('historical_data/all_scores.csv', index=False)
-score_records.to_csv(f'historical_data/all_scores_{date_ymd}.csv', index=False)
-
 
 # Read the updated CSV file
 df_updated = pd.read_csv('historical_data/all_scores.csv')
