@@ -324,8 +324,8 @@ final_psa = round(tweets_df_psa["Stance_weighted_0to100"].mean(), 2)
 
 
 # INVESTMENTS
-final_invcap = 94.29  # TODO
-final_invsaf = 7.35  # TODO
+final_invcap = 96.17  # TODO
+final_invsaf = 25.75  # TODO
 
 
 # FINAL TOTAL CALCULATION
