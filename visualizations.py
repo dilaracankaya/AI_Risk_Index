@@ -13,7 +13,7 @@ filterwarnings('ignore')
 
 from indicators import airi_score, hist_invcap, hist_invsaf, hist_rsa, hist_psa, hist_airi, hist_date_records_formatted
 
-x_post_date = "9 Sep 2024"
+x_post_date = "14 Oct 2024"
 
 
 def create_html(input_data, output_filename, img_type="web", new_width=None, new_height=None):
